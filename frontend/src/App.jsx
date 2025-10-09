@@ -50,12 +50,12 @@ function App() {
           borderRadius={0.05} 
           scrollEase={0.02}
           items={[
-            { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop', text: 'Aptitude' },
-            { image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop', text: 'Coding' },
-            { image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&h=600&fit=crop', text: 'Mathematics' },
-            { image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop', text: 'Science' },
-            { image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=600&fit=crop', text: 'History' },
-            { image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop', text: 'Literature' }
+            { image: '/Images/Aptitude.png', text: 'Aptitude' },
+            { image: '/Images/coding.png', text: 'Coding' },
+            { image: '/Images/Maths.png', text: 'Mathematics' },
+            { image: '/Images/Science.png', text: 'Science' },
+            { image: '/Images/History.png', text: 'History' },
+            { image: '/Images/Literature.png', text: 'Literature' }
           ]}
         />
       </div>
@@ -90,7 +90,9 @@ function App() {
             display: 'flex',
             alignItems: 'stretch'
           }}>
-            <video
+            <img
+              src="/Images/Maskot.png"
+              alt="Play2Learn Mascot"
               style={{
                 width: '100%',
                 height: '100%',
@@ -98,14 +100,7 @@ function App() {
                 objectFit: 'cover',
                 borderRadius: '24px'
               }}
-              autoPlay
-              muted
-              loop
-              playsInline
-            >
-              <source src="/Videos/Demo 1.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            />
             {/* Removed play overlay per request */}
           </div>
 
@@ -300,8 +295,8 @@ function App() {
           color: '#ffffff',
           margin: '0 0 2rem 0',
           lineHeight: '1.2'
-        }}>Our Team</h2>
-        <p style={{ color: '#cfcfd6', margin: '0 0 24px 0' }}>Meet the folks behind Play2Learn.</p>
+        }}>Meet our Team</h2>
+        <p style={{ color: '#cfcfd6', margin: '0 0 24px 0' }}>Hey there! I'm Noodle, the Play2Learn mascot, and I'm thrilled to introduce our fantastic four-member team who make all this learning magic happen!</p>
         <div style={{
           height: '800px',
           position: 'relative',
