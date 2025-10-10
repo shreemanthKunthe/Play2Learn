@@ -7,6 +7,42 @@ body {
   position: relative;
 }
 
+html { scroll-behavior: smooth; }
+
+/* Spacing utilities */
+:root {
+  --container-max: 1400px;
+  --gutter-x: 40px;          /* horizontal padding for containers */
+  --section-pad-top: 200px;  /* top padding for major sections */
+  --section-pad-bottom: 120px; /* bottom padding for major sections */
+}
+
+.section {
+  padding: var(--section-pad-top) 0 var(--section-pad-bottom) 0;
+  background: #0b0c10;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter-x);
+}
+
+.footer-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 40px var(--gutter-x);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+/* Team section tweaks: push slightly up for better visual rhythm */
+.team-section {
+  padding-top: calc(var(--section-pad-top) - 120px);
+}
+.team-section .two-col-grid { gap: 56px; }
+
 body::before {
   content: '';
   position: fixed;
@@ -92,15 +128,24 @@ body::after {
 /* Navbar */
 .navbar {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--container-max);
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 40px;
+  padding: 14px var(--gutter-x);
   box-sizing: border-box;
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   font-family: "Instrument Sans", system-ui, Arial, sans-serif;
+  background: rgba(11, 12, 16, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 2px 18px rgba(0,0,0,0.25);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .logo {
@@ -116,11 +161,15 @@ body::after {
 
 .nav-links li {
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  padding: 8px 12px;
+  border-radius: 10px;
 }
 
 .nav-links li:hover {
-  color: #ffd700;
+  color: #0b0c10;
+  background: linear-gradient(160deg, #ffcc33 0%, #ffdb66 100%);
+  transform: translateY(-1px);
 }
 
 /* Hero Content */
@@ -313,4 +362,104 @@ body::after {
   .hero-content {
     padding: 0 16px;
   }
+}
+
+/* Team list styles */
+.team-list {
+  display: grid;
+  gap: 16px;
+}
+
+.team-item {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
+  overflow: hidden;
+}
+
+.team-item:hover {
+  border-color: rgba(255, 204, 51, 0.4);
+  background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  transform: translateY(-2px);
+}
+
+.team-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .2px;
+}
+
+.team-title {
+  font-size: 0.95rem;
+  color: #cfcfd6;
+  margin-top: 4px;
+}
+
+.team-desc {
+  font-size: 0.95rem;
+  color: #e9e9ee;
+  margin-top: 10px;
+  line-height: 1.5;
+  opacity: 0;
+  max-height: 0;
+  transition: opacity .25s ease, max-height .25s ease;
+}
+
+.team-item:hover .team-desc {
+  opacity: 1;
+  max-height: 160px;
+}
+
+/* Shared two-column section grid (How it Works, Team) */
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: stretch;
+  min-height: 70vh;
+}
+
+/* Mascot/video panel container visuals */
+.mascot-panel {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive: reduce paddings and collapse grids */
+@media (max-width: 1200px) {
+  :root {
+    --gutter-x: 24px;
+  }
+  .two-col-grid { gap: 48px; }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --section-pad-top: 140px;
+    --section-pad-bottom: 96px;
+  }
+  .two-col-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    min-height: auto;
+  }
+  .mascot-panel img { min-height: 380px !important; }
+  .hero-content { padding: 0 16px; }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --gutter-x: 16px;
+    --section-pad-top: 100px;
+    --section-pad-bottom: 80px;
+  }
+  .buttons { flex-direction: column; gap: 12px; }
+  .btn-primary, .btn-secondary { width: 100%; }
 }

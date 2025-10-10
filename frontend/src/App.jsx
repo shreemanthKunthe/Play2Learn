@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./App.css";
 import TextPressure from './TextPressure';
 import CircularGallery from './CircularGallery';
-import FlowingMenu from './FlowingMenu';
+// import FlowingMenu from './FlowingMenu';
+import ProfileCard from './ProfileCard';
 
 function App() {
   const navigate = useNavigate();
@@ -14,8 +15,8 @@ function App() {
       <nav className="navbar">
         <h2 className="logo">Play2Learn</h2>
         <ul className="nav-links">
-          <li>How it works</li>
-          <li>Team</li>
+          <li onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>How it works</li>
+          <li onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}>Team</li>
           <li onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>Sign in</li>
         </ul>
       </nav>
@@ -38,8 +39,13 @@ function App() {
         <p className="hero-subtitle">Play2Learn is a gamified learning platform that transforms education into an interactive journey.
         Instead of traditional study methods, users progress through levels like a game, unlocking knowledge step by step. With a dopamine-driven design, 2D characters, and subject-based challenges, Play2Learn makes learning fun, addictive, and rewarding</p>
         <div className="buttons">
-          <button className="btn-primary">Get Started →</button>
-          <button className="btn-secondary">How it works →</button>
+          <button className="btn-primary" onClick={() => navigate('/login')}>Get Started →</button>
+          <button
+            className="btn-secondary"
+            onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            How it works →
+          </button>
         </div>
       </div>
 
@@ -61,26 +67,12 @@ function App() {
       </div>
     </div>
 
-    <section style={{
-      background: '#0b0c10',
-      padding: '200px 0 120px 0',
-      fontFamily: '"Instrument Sans", system-ui, Arial, sans-serif'
-    }}>
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '0 40px'
-      }}>
+    <section id="how-it-works" className="section" style={{ fontFamily: '"Instrument Sans", system-ui, Arial, sans-serif' }}>
+      <div className="container">
         {/* Main Content - Two Column Layout */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '80px',
-          alignItems: 'stretch',
-          minHeight: '70vh'
-        }}>
+        <div className="two-col-grid">
           {/* Left Side - Video */}
-          <div style={{
+          <div className="mascot-panel" style={{
             position: 'relative',
             borderRadius: '24px',
             overflow: 'hidden',
@@ -287,34 +279,67 @@ function App() {
       </div>
     </section>
     {/* Team Section */}
-    <section style={{ padding: '120px 0', background: '#0b0c10' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+    <section id="team" className="section team-section">
+      <div className="container">
         <h2 style={{
           fontSize: 'clamp(2.5rem, 5vw, 4rem)',
           fontWeight: '700',
           color: '#ffffff',
-          margin: '0 0 2rem 0',
+          margin: '0 0 1.5rem 0',
           lineHeight: '1.2'
         }}>Meet our Team</h2>
-        <p style={{ color: '#cfcfd6', margin: '0 0 24px 0' }}>Hey there! I'm Noodle, the Play2Learn mascot, and I'm thrilled to introduce our fantastic four-member team who make all this learning magic happen!</p>
-        <div style={{
-          height: '800px',
-          position: 'relative',
-          borderRadius: '24px',
-          overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.08)',
-          width: '100vw',
-          marginLeft: 'calc(50% - 50vw)'
-        }}>
-          <FlowingMenu items={[
-            { link: '#', text: 'Priyanka P', image: '/Images/1.jpg' },
-            { link: '#', text: 'Raghunandan H', image: '/Images/2.jpg' },
-            { link: '#', text: 'Shreemanth K', image: '/Images/3.jpg' },
-            { link: '#', text: 'Tejashwini G', image: '/Images/4.jpg' }
-          ]} />
+        <p style={{ color: '#cfcfd6', margin: '0 0 32px 0' }}>Hey there! I'm Noodle, the Play2Learn mascot, and I'm thrilled to introduce our fantastic four-member team who make all this learning magic happen!</p>
+
+        {/* Two-column layout sized like How it Works */}
+        <div className="two-col-grid">
+          {/* Left: names list */}
+          <div className="team-list">
+            {[ 
+              { name: 'Priyanka P', title: 'Product Designer', desc: 'Leads product experience and visual design with a focus on clarity and delight.' },
+              { name: 'Raghunandan H', title: 'Frontend Engineer', desc: 'Owns UI engineering, performance, and accessibility across the app.' },
+              { name: 'Shreemanth K', title: 'Software Engineer', desc: 'Builds core features and architecture with a passion for clean code.' },
+              { name: 'Tejashwini G', title: 'Backend Engineer', desc: 'Designs APIs, data models, and resilient services that scale.' },
+            ].map((m, i) => (
+              <div key={i} className="team-item">
+                <div className="team-name">{m.name}</div>
+                <div className="team-title">{m.title}</div>
+                <div className="team-desc">{m.desc}</div>
+              </div>
+            ))}
+          </div>
+          {/* Right: mascot */}
+          <div className="mascot-panel" style={{
+            position: 'relative',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img src="/Images/maskot2.png" alt="Play2Learn Mascot" style={{ width: '100%', height: '100%', minHeight: '600px', objectFit: 'contain' }} />
+          </div>
+        </div>
       </div>
-    </div>
     </section>
+    {/* Footer */}
+    <footer style={{ background: '#0b0c10', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="footer-inner">
+        <div style={{ color: '#cfcfd6' }}>
+          <strong style={{ color: '#fff' }}>Play2Learn</strong> · Learn by playing
+        </div>
+        <div style={{ display: 'flex', gap: '16px', color: '#cfcfd6' }}>
+          <a href="#" style={{ color: '#cfcfd6', textDecoration: 'none' }}>Privacy</a>
+          <a href="#" style={{ color: '#cfcfd6', textDecoration: 'none' }}>Terms</a>
+          <a href="#" style={{ color: '#cfcfd6', textDecoration: 'none' }}>Contact</a>
+        </div>
+      </div>
+      <div style={{ textAlign: 'center', color: '#7a7a85', fontSize: '12px', paddingBottom: '24px' }}>
+        © {new Date().getFullYear()} Play2Learn. All rights reserved.
+      </div>
+    </footer>
     </>
   );
 }
