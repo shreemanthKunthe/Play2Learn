@@ -4,25 +4,25 @@ import './SubjectSelect.css';
 
 const SUBJECTS = [
   {
-    key: 'javascript',
-    title: 'JavaScript',
+    key: 'Company Quizes',
+    title: 'Company Quizes',
     desc: 'ES6+, DOM, async, and more.',
     color: '#f7df1e',
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/CQuiz.png'
   },
   {
-    key: 'python',
-    title: 'Python',
+    key: 'Aptitude',
+    title: 'Aptitude',
     desc: 'Basics, OOP, data, and libs.',
     color: '#3776ab',
-    image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/Aptitude.png'
   },
   {
-    key: 'htmlcss',
-    title: 'HTML & CSS',
+    key: 'Web Development',
+    title: 'Web Development',
     desc: 'Layouts, flex/grid, responsive.',
     color: '#ff6a00',
-    image: 'https://images.unsplash.com/photo-1520975922420-6c0b5abe3462?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/Web.png'
   },
 ];
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
 import TextPressure from './TextPressure';
@@ -8,6 +8,25 @@ import ProfileCard from './ProfileCard';
 
 function App() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll('.reveal'));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            // Optionally unobserve after reveal to improve perf
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.15 }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
@@ -38,7 +57,7 @@ function App() {
         </div>
         <p className="hero-subtitle">Play2Learn is a gamified learning platform that transforms education into an interactive journey.
         Instead of traditional study methods, users progress through levels like a game, unlocking knowledge step by step. With a dopamine-driven design, 2D characters, and subject-based challenges, Play2Learn makes learning fun, addictive, and rewarding</p>
-        <div className="buttons">
+        <div className="buttons reveal">
           <button className="btn-primary" onClick={() => navigate('/login')}>Get Started →</button>
           <button
             className="btn-secondary"
@@ -61,18 +80,17 @@ function App() {
             { image: '/Images/Maths.png', text: 'Mathematics' },
             { image: '/Images/Science.png', text: 'Science' },
             { image: '/Images/History.png', text: 'History' },
-            { image: '/Images/Literature.png', text: 'Literature' }
           ]}
         />
       </div>
     </div>
 
-    <section id="how-it-works" className="section" style={{ fontFamily: '"Instrument Sans", system-ui, Arial, sans-serif' }}>
+    <section id="how-it-works" className="section" style={{ fontFamily: '\"Instrument Sans\", system-ui, Arial, sans-serif' }}>
       <div className="container">
         {/* Main Content - Two Column Layout */}
-        <div className="two-col-grid">
+        <div className="two-col-grid reveal">
           {/* Left Side - Video */}
-          <div className="mascot-panel" style={{
+          <div className="mascot-panel reveal" style={{
             position: 'relative',
             borderRadius: '24px',
             overflow: 'hidden',
@@ -82,22 +100,25 @@ function App() {
             display: 'flex',
             alignItems: 'stretch'
           }}>
-            <img
-              src="/Images/Maskot.png"
-              alt="Play2Learn Mascot"
+            <video
+              src="/Videos/mascotv.mp4"
+              poster="/Images/Maskot.png"
+              autoPlay
+              muted
+              loop
+              playsInline
               style={{
                 width: '100%',
                 height: '100%',
                 minHeight: '600px',
-                objectFit: 'cover',
-                borderRadius: '24px'
+                objectFit: 'cover'
               }}
             />
             {/* Removed play overlay per request */}
           </div>
 
           {/* Right Side - How it Works */}
-          <div>
+          <div className="reveal">
             <h2 style={{
               fontSize: 'clamp(2.5rem, 5vw, 4rem)',
               fontWeight: '700',
@@ -291,7 +312,7 @@ function App() {
         <p style={{ color: '#cfcfd6', margin: '0 0 32px 0' }}>Hey there! I'm Noodle, the Play2Learn mascot, and I'm thrilled to introduce our fantastic four-member team who make all this learning magic happen!</p>
 
         {/* Two-column layout sized like How it Works */}
-        <div className="two-col-grid">
+        <div className="two-col-grid reveal">
           {/* Left: names list */}
           <div className="team-list">
             {[ 
@@ -300,7 +321,7 @@ function App() {
               { name: 'Shreemanth K', title: 'Software Engineer', desc: 'Builds core features and architecture with a passion for clean code.' },
               { name: 'Tejashwini G', title: 'Backend Engineer', desc: 'Designs APIs, data models, and resilient services that scale.' },
             ].map((m, i) => (
-              <div key={i} className="team-item">
+              <div key={i} className="team-item reveal">
                 <div className="team-name">{m.name}</div>
                 <div className="team-title">{m.title}</div>
                 <div className="team-desc">{m.desc}</div>
@@ -308,7 +329,7 @@ function App() {
             ))}
           </div>
           {/* Right: mascot */}
-          <div className="mascot-panel" style={{
+          <div className="mascot-panel reveal" style={{
             position: 'relative',
             borderRadius: '24px',
             overflow: 'hidden',
@@ -316,16 +337,24 @@ function App() {
             border: '1px solid rgba(255, 255, 255, 0.1)',
             height: '100%',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'stretch',
             justifyContent: 'center'
           }}>
-            <img src="/Images/maskot2.png" alt="Play2Learn Mascot" style={{ width: '100%', height: '100%', minHeight: '600px', objectFit: 'contain' }} />
+            <video
+              src="/Videos/TeamS.mp4"
+              poster="/Images/maskot2.png"
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ width: '100%', height: '100%', minHeight: '900px', objectFit: 'cover' }}
+            />
           </div>
         </div>
       </div>
     </section>
     {/* Footer */}
-    <footer style={{ background: '#0b0c10', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+    <footer className="reveal" style={{ background: '#0b0c10', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="footer-inner">
         <div style={{ color: '#cfcfd6' }}>
           <strong style={{ color: '#fff' }}>Play2Learn</strong> · Learn by playing
