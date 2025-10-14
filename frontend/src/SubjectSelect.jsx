@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './SubjectSelect.css';
 
 const SUBJECTS = [
@@ -38,14 +38,14 @@ export default function SubjectSelect() {
         </div>
         <div className="grid">
           {SUBJECTS.map((s) => (
-            <button key={s.key} className="subject-card" onClick={() => navigate(`/choose?subject=${s.key}`)}>
+            <Link key={s.key} className="subject-card" to={`/arena?subject=${encodeURIComponent(s.key)}`}>
               <div className="thumb" style={{ backgroundImage: `url(${s.image})` }} />
               <div className="meta">
                 <span className="pill" style={{ background: s.color, color: '#0b0c10' }}>{s.title}</span>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>

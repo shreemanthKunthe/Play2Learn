@@ -36,12 +36,18 @@ function GameArena() {
   const subject = (params.get('subject') || 'javascript').toLowerCase();
   const subjectTitle = subject === 'javascript' ? 'JavaScript' : subject === 'python' ? 'Python' : subject === 'htmlcss' ? 'HTML & CSS' : subject;
   const [playerHP, setPlayerHP] = useState(100);
-  const [robotHP, setRobotHP] = useState(100);
+  const [challengerHP, setChallengerHP] = useState(100);
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState('');
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
+  const [playerAnim, setPlayerAnim] = useState('');
+  const [challengerAnim, setChallengerAnim] = useState('');
+
+  // Placeholder video sources. Replace with your actual files in /public/Videos
+  const playerVideo = '/Videos/player.mp4';
+  const challengerVideo = '/Videos/challenger.mp4';
 
   const question = useMemo(() => QUESTIONS[idx % QUESTIONS.length], [idx]);
 
@@ -53,19 +59,22 @@ function GameArena() {
     const correct = i === question.answer;
     if (correct) {
       setResult('Correct!');
-      setRobotHP((hp) => Math.max(0, hp - 20));
+      setChallengerHP((hp) => Math.max(0, hp - 20));
+      setChallengerAnim('hit');
     } else {
       setResult('Wrong!');
       setPlayerHP((hp) => Math.max(0, hp - 20));
+      setPlayerAnim('hit');
     }
     timerRef.current = setTimeout(() => {
       setSelected(null);
       setResult('');
+      setPlayerAnim('');
+      setChallengerAnim('');
       setIdx((v) => v + 1);
-    }, 2000);
+    }, 1200);
   };
-
-  const gameOver = playerHP === 0 || robotHP === 0;
+  const gameOver = playerHP === 0 || challengerHP === 0;
 
   return (
     <div className="arena-page">
@@ -75,31 +84,24 @@ function GameArena() {
           <h1 className="arena-title">{subjectTitle} Arena</h1>
           <p className="arena-subtitle">Answer questions to defeat your opponent. Each mistake costs 20 HP.</p>
         </div>
-        <div className="arena-top">
-          <div className="entity">
-            <div className="hp-bar green">
-              <div className="hp-fill" style={{ width: `${playerHP}%` }} />
-            </div>
-            <div className="card player">
-              <div className="image" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1517260739337-6799d9d2b1a8?q=80&w=1200&auto=format&fit=crop')" }} />
+
+        <div className="arena-stage">
+          <div className={`stage half left ${playerAnim}`}>
+            <video src="/Videos/Player.mp4" autoPlay muted loop playsInline />
+            <div className="overlay">
+              <div className="hp-bar green"><div className="hp-fill" style={{ width: `${playerHP}%` }} /></div>
               <span className="label">Player</span>
             </div>
           </div>
-
-          <div className="vs">VS</div>
-
-          <div className="entity">
-            <div className="hp-bar red">
-              <div className="hp-fill" style={{ width: `${robotHP}%` }} />
-            </div>
-            <div className="card robot">
-              <div className="image" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518773553398-650c184e0bb3?q=80&w=1200&auto=format&fit=crop')" }} />
-              <span className="label">Robot</span>
+          <div className={`stage half right ${challengerAnim}`}>
+            <video src="/Videos/Player.mp4" autoPlay muted loop playsInline />
+            <div className="overlay">
+              <div className="hp-bar red"><div className="hp-fill" style={{ width: `${challengerHP}%` }} /></div>
+              <span className="label">Challenger</span>
             </div>
           </div>
-        </div>
-
-        <div className="quiz">
+          <div className="vs-mid">VS</div>
+          <div className="quiz quiz-overlay">
           {!gameOver ? (
             <>
               <h2 className="question">{question.q}</h2>
@@ -125,13 +127,14 @@ function GameArena() {
             </>
           ) : (
             <div className="gameover">
-              {playerHP === 0 ? 'Game Over - Robot Wins!' : 'Victory - You Win!'}
+              {playerHP === 0 ? 'Game Over - Challenger Wins!' : 'Victory - You Win!'}
               <div className="go-actions">
-                <button className="btn yellow" onClick={() => { setPlayerHP(100); setRobotHP(100); setIdx(0); setSelected(null); setResult(''); }}>Play Again</button>
-                <button className="btn gray" onClick={() => navigate('/choose')}>Back</button>
+                <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); }}>Play Again</button>
+                <button className="btn gray" onClick={() => navigate('/subjects')}>Back</button>
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
