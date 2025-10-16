@@ -2,33 +2,85 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './GameArena.css';
 
-const QUESTIONS = [
-  {
-    q: 'What does === mean in JavaScript?',
-    options: [
-      'Assignment operator',
-      'Strict equality comparison',
-      'Loose equality comparison',
-      'Type coercion operator',
-    ],
-    answer: 1,
-  },
-  {
-    q: 'Which array method returns a new array with elements that pass a test?',
-    options: ['map', 'reduce', 'filter', 'forEach'],
-    answer: 2,
-  },
-  {
-    q: 'Which keyword declares a block-scoped variable?',
-    options: ['var', 'let', 'const', 'static'],
-    answer: 1,
-  },
-  {
-    q: 'What is the output of typeof null?',
-    options: ['null', 'undefined', 'object', 'number'],
-    answer: 2,
-  },
-];
+// Subject-specific question banks
+const QUESTIONS_BY_SUBJECT = {
+  // Default/general JS bank
+  default: [
+    {
+      q: 'What does === mean in JavaScript?',
+      options: ['Assignment operator','Strict equality comparison','Loose equality comparison','Type coercion operator'],
+      answer: 1,
+    },
+    {
+      q: 'Which array method returns a new array with elements that pass a test?',
+      options: ['map','reduce','filter','forEach'],
+      answer: 2,
+    },
+    {
+      q: 'Which keyword declares a block-scoped variable?',
+      options: ['var','let','const','static'],
+      answer: 1,
+    },
+    {
+      q: 'What is the output of typeof null?',
+      options: ['null','undefined','object','number'],
+      answer: 2,
+    },
+  ],
+  // Cognizant-style gamified scenarios
+  'company questions': [
+    {
+      q: 'Sprint demo in 10 minutes: your API returns 500 in prod for one endpoint. What is your BEST immediate action?',
+      options: [
+        'Refactor the whole module for long-term stability',
+        'Roll back the last deploy and add a quick health-check alert',
+        'Ignore it for now and proceed with the demo',
+        'Open a Jira ticket and wait for triage tomorrow',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'You are optimizing a dashboard loading in 6s. Profiling shows 70% spent awaiting 4 sequential API calls. What is the most impactful first step?',
+      options: [
+        'Minify CSS and images',
+        'Parallelize API calls and cache stable responses',
+        'Add a loading spinner to improve perceived speed',
+        'Move all logic to the client side',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'A payments feature intermittently fails under load. Logs show race conditions updating the same record. What’s the best fix?',
+      options: [
+        'Increase server CPU and memory',
+        'Introduce optimistic locking or transactions for writes',
+        'Retry failed writes endlessly',
+        'Disable concurrency until later',
+      ],
+      answer: 1,
+    },
+    {
+      q: 'Security review flags secrets in code history. What should you do NOW?',
+      options: [
+        'Remove the secrets from current code only',
+        'Rotate the secrets, purge from history, add pre-commit secret scanning',
+        'Document the incident and continue',
+        'Push secrets to .env and call it done',
+      ],
+      answer: 1,
+    },
+  ],
+  aptitude: [
+    { q: 'If a train travels 120 km in 2 hours, its average speed is?', options: ['40 km/h','50 km/h','60 km/h','80 km/h'], answer: 2 },
+    { q: 'The next number in the series 2, 6, 12, 20, ? is', options: ['24','28','30','32'], answer: 1 },
+    { q: 'What is 35% of 240?', options: ['72','80','84','96'], answer: 2 },
+  ],
+  'web development': [
+    { q: 'Which CSS layout is best for 2D page grids?', options: ['Flexbox','Grid','Float','Position'], answer: 1 },
+    { q: 'Largest Contentful Paint primarily measures?', options: ['Interactivity','Visual stability','Load of largest content','Input delay'], answer: 2 },
+    { q: 'Which tag is semantic?', options: ['div','span','section','b'], answer: 2 },
+  ],
+};
 
 function GameArena() {
   const navigate = useNavigate();
@@ -48,19 +100,38 @@ function GameArena() {
   const [suggestion, setSuggestion] = useState('');
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const LEVELS = useMemo(() => ([
+    { name: 'Level 1: Trainee', challengerVideo: '/Videos/Challenger.mp4' },
+    { name: 'Level 2: Specialist', challengerVideo: '/Videos/Challenger2.mp4' },
+    { name: 'Level 3: Boss', challengerVideo: '/Videos/Challenger3.mp4' },
+  ]), []);
+  const [level, setLevel] = useState(0);
 
   // Placeholder video sources. Replace with your actual files in /public/Videos
   const playerVideo = '/Videos/player.mp4';
-  const challengerVideo = '/Videos/challenger.mp4';
+  const challengerVideo = (LEVELS[level] && LEVELS[level].challengerVideo) || '/Videos/Challenger.mp4';
 
-  const question = useMemo(() => QUESTIONS[idx % QUESTIONS.length], [idx]);
+  const questions = useMemo(() => {
+    const key = subject; // already lowercased
+    return QUESTIONS_BY_SUBJECT[key] || QUESTIONS_BY_SUBJECT.default;
+  }, [subject]);
+  const question = useMemo(() => questions[idx % questions.length], [idx, questions]);
+
+  // Reset score when subject changes
+  useEffect(() => {
+    setCorrectCount(0);
+    setTotalCount(0);
+  }, [subject]);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  // Countdown and suggestion logic
+  // Countdown and suggestion logic (timer scales by level)
   useEffect(() => {
     if (paused || gameOver) return;
-    setTimeLeft(15);
+    const initial = Math.max(8, 15 - level * 2);
+    setTimeLeft(initial);
     setSuggestion('');
     const iv = setInterval(() => {
       setTimeLeft((t) => {
@@ -75,7 +146,7 @@ function GameArena() {
     }, 1000);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, paused]);
+  }, [idx, paused, level]);
 
   // Voice recognition setup/teardown
   useEffect(() => {
@@ -148,8 +219,10 @@ function GameArena() {
     if (selected !== null || paused) return;
     setSelected(i);
     const correct = i === question.answer;
+    setTotalCount((n) => n + 1);
     if (correct) {
       setResult('Correct!');
+      setCorrectCount((n) => n + 1);
       setChallengerHP((hp) => Math.max(0, hp - 20));
       setChallengerAnim('hit');
     } else {
@@ -175,6 +248,7 @@ function GameArena() {
           <span className="subject-pill">{subjectTitle}</span>
           <h1 className="arena-title">{subjectTitle} Arena</h1>
           <p className="arena-subtitle">Answer questions to defeat your opponent. Each mistake costs 20 HP.</p>
+          <div className="arena-level" style={{opacity:.9, marginTop:8}}>{LEVELS[level]?.name}</div>
         </div>
 
         <div className="arena-stage">
@@ -186,7 +260,7 @@ function GameArena() {
             </div>
           </div>
           <div className={`stage half right ${challengerAnim}`}>
-            <video src="/Videos/Challenger.mp4" autoPlay muted loop playsInline />
+            <video src={challengerVideo} autoPlay muted loop playsInline />
             <div className="overlay">
               <div className="hp-bar red"><div className="hp-fill" style={{ width: `${challengerHP}%` }} /></div>
               <span className="label">Challenger</span>
@@ -229,8 +303,23 @@ function GameArena() {
           ) : (
             <div className="gameover">
               {playerHP === 0 ? 'Game Over - Challenger Wins!' : 'Victory - You Win!'}
-              <div className="go-actions">
-                <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); }}>Play Again</button>
+              <div className="score" style={{marginTop:12}}>
+                Score: {correctCount}/{totalCount} ({totalCount ? Math.round((correctCount/totalCount)*100) : 0}%)
+              </div>
+              <div className="go-actions" style={{display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center'}}>
+                {playerHP > 0 && level < LEVELS.length - 1 && (
+                  <button className="btn yellow" onClick={() => {
+                    setIdx(0);
+                    setSelected(null);
+                    setResult('');
+                    setPlayerHP(100);
+                    setChallengerHP(100);
+                    setPlayerAnim('');
+                    setChallengerAnim('');
+                    setLevel((lv) => lv + 1);
+                  }}>Next Level</button>
+                )}
+                <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); setCorrectCount(0); setTotalCount(0); setLevel(0); }}>Restart</button>
                 <button className="btn gray" onClick={() => navigate('/subjects')}>Back</button>
               </div>
             </div>
