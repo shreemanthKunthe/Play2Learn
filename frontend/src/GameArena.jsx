@@ -94,7 +94,7 @@ function GameArena() {
             </div>
           </div>
           <div className={`stage half right ${challengerAnim}`}>
-            <video src="/Videos/Player.mp4" autoPlay muted loop playsInline />
+            <video src="/Videos/Challenger.mp4" autoPlay muted loop playsInline />
             <div className="overlay">
               <div className="hp-bar red"><div className="hp-fill" style={{ width: `${challengerHP}%` }} /></div>
               <span className="label">Challenger</span>

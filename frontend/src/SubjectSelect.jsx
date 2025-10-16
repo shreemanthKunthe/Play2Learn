@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import './SubjectSelect.css';
+import InfiniteMenu from './InfiniteMenu';
 
 const SUBJECTS = [
   {
@@ -27,26 +27,23 @@ const SUBJECTS = [
 ];
 
 export default function SubjectSelect() {
-  const navigate = useNavigate();
+
+  const items = SUBJECTS.map((s) => ({
+    image: s.image,
+    link: `/arena?subject=${encodeURIComponent(s.key)}`,
+    title: s.title,
+    description: s.desc,
+  }));
 
   return (
-    <div className="subjects-page">
+    <div className="subjects-page" style={{ minHeight: '80vh' }}>
       <div className="subjects-container">
         <div className="subjects-header">
           <h1 className="title">Pick a Subject</h1>
-          <p className="subtitle">Start with JavaScript or explore more. Your journey begins here.</p>
+          <p className="subtitle">Spin the wheel and jump in. Your journey begins here.</p>
         </div>
-        <div className="grid">
-          {SUBJECTS.map((s) => (
-            <Link key={s.key} className="subject-card" to={`/arena?subject=${encodeURIComponent(s.key)}`}>
-              <div className="thumb" style={{ backgroundImage: `url(${s.image})` }} />
-              <div className="meta">
-                <span className="pill" style={{ background: s.color, color: '#0b0c10' }}>{s.title}</span>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-              </div>
-            </Link>
-          ))}
+        <div style={{ height: '600px', position: 'relative' }}>
+          <InfiniteMenu items={items} />
         </div>
       </div>
     </div>
