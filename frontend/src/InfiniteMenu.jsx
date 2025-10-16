@@ -178,6 +178,7 @@ export default function InfiniteMenu({ items = [] }){
   const canvasRef = useRef(null);
   const [activeItem, setActiveItem] = useState(null);
   const [isMoving, setIsMoving] = useState(false);
+  const [webglSupported, setWebglSupported] = useState(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -187,7 +188,14 @@ export default function InfiniteMenu({ items = [] }){
       setActiveItem(items.length ? items[itemIndex] : defaultItems[0]);
     };
     if (canvas) {
-      sketch = new InfiniteGridMenu(canvas, items.length ? items : defaultItems, handleActiveItem, setIsMoving, (sk) => sk.run());
+      // Detect WebGL2 support early; fallback if unavailable (common on low-end/mobile browsers)
+      const gl2 = canvas.getContext('webgl2', { antialias: true, alpha: false });
+      if (!gl2) {
+        setWebglSupported(false);
+      } else {
+        setWebglSupported(true);
+        sketch = new InfiniteGridMenu(canvas, items.length ? items : defaultItems, handleActiveItem, setIsMoving, (sk) => sk.run());
+      }
     }
     const handleResize = () => { if (sketch) sketch.resize(); };
     window.addEventListener('resize', handleResize);
@@ -204,6 +212,24 @@ export default function InfiniteMenu({ items = [] }){
       window.location.href = activeItem.link;
     }
   };
+
+  if (!webglSupported) {
+    // Fallback: simple responsive grid of items
+    const list = items.length ? items : defaultItems;
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, padding: 16 }}>
+        {list.map((it, i) => (
+          <button key={i} onClick={() => { setActiveItem(it); handleButtonClick(); }} style={{ appearance: 'none', border: '1px solid rgba(255,255,255,0.1)', background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))', borderRadius: 16, overflow: 'hidden', textAlign: 'left', color: 'inherit', cursor: 'pointer' }}>
+            <div style={{ height: 140, backgroundImage: `url(${it.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            <div style={{ padding: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 6 }}>{it.title || ''}</div>
+              <div style={{ opacity: .8, fontSize: '.9rem' }}>{it.description || ''}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>

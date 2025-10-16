@@ -7,7 +7,7 @@
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 
 /* New: full-height wrapper for InfiniteMenu */
-.infinite-wrap { position: relative; flex: 1; min-height: 0; }
+.infinite-wrap { position: relative; flex: 1; min-height: clamp(360px, 70svh, 900px); }
 .subject-card { appearance: none; border: none; text-align: left; cursor: pointer; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,.35); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
 .subject-card:hover { transform: translateY(-6px); box-shadow: 0 30px 80px rgba(0,0,0,.45); border-color: rgba(255,255,255,0.18); }
 .thumb { height: 180px; background-size: cover; background-position: center; }
@@ -17,3 +17,6 @@
 .meta p { margin: 0; color: #cfcfd6; }
 @media (max-width: 960px) { .grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .thumb { height: 160px; } }
+
+/* Mobile-safe page height */
+.subjects-page { min-height: 100svh; height: auto; overflow: visible; }

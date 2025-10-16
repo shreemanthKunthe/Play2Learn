@@ -41,7 +41,7 @@ function App() {
       </nav>
 
       <div className="hero-content">
-        <div style={{position: 'relative', height: '300px'}}>
+        <div style={{ position: 'relative', height: 'min(30svh, 300px)' }}>
           <TextPressure
             text="Play2Learn"
             flex={true}
@@ -68,7 +68,7 @@ function App() {
         </div>
       </div>
 
-      <div style={{ height: '70vh', width: '100vw', position: 'relative', margin: '0 -40px', marginTop: '-20px' }}>
+      <div style={{ height: 'min(60svh, 520px)', width: '100%', position: 'relative', margin: 0, marginTop: '8px', overflow: 'hidden' }}>
         <CircularGallery 
           bend={3} 
           textColor="#ffffff" 
@@ -110,7 +110,7 @@ function App() {
               style={{
                 width: '100%',
                 height: '100%',
-                minHeight: '600px',
+                maxHeight: 'min(60svh, 420px)',
                 objectFit: 'cover'
               }}
             />
@@ -347,7 +347,7 @@ function App() {
               muted
               loop
               playsInline
-              style={{ width: '100%', height: '100%', minHeight: '900px', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', maxHeight: 'min(70svh, 560px)', objectFit: 'cover' }}
             />
           </div>
         </div>
