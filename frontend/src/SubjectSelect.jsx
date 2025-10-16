@@ -36,16 +36,8 @@ export default function SubjectSelect() {
   }));
 
   return (
-    <div className="subjects-page" style={{ minHeight: '80vh' }}>
-      <div className="subjects-container">
-        <div className="subjects-header">
-          <h1 className="title">Pick a Subject</h1>
-          <p className="subtitle">Spin the wheel and jump in. Your journey begins here.</p>
-        </div>
-        <div style={{ height: '600px', position: 'relative' }}>
-          <InfiniteMenu items={items} />
-        </div>
-      </div>
+    <div className="subjects-page">
+      <div className="infinite-wrap"><InfiniteMenu items={items} /></div>
     </div>
   );
 }

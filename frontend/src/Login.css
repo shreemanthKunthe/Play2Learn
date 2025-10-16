@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 0;
   font-family: "Instrument Sans", system-ui, Arial, sans-serif;
   position: relative;
   overflow: hidden;
@@ -64,13 +64,13 @@
   overflow: hidden;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
+  height: 100%;
 }
 
 /* Left mascot video panel */
 .login-mascot-panel {
   position: relative;
   height: 100%;
-  min-height: 700px;
   background: #000;
 }
 

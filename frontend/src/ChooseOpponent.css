@@ -3,17 +3,17 @@
   background: radial-gradient(1200px 600px at 10% -10%, rgba(255,204,51,0.06), transparent), 
               radial-gradient(1000px 500px at 110% 110%, rgba(0,198,255,0.05), transparent), 
               #0f0f0f; 
-  display: flex; align-items: center; justify-content: center; 
-  padding: 60px 24px; color: #fff; 
+  display: block;
+  padding: 40px 24px; color: #fff; 
   font-family: "Instrument Sans", system-ui, Arial, sans-serif; 
 }
-.choose-container { max-width: 1200px; width: 100%; text-align: center; }
+.choose-container { max-width: none; width: 100%; text-align: left; }
 .choose-header { margin-bottom: 28px; display: grid; gap: 8px; justify-items: center; }
 .subject-pill { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #ffcc33; color: #0b0c10; font-weight: 800; font-size: 12px; letter-spacing: .3px; }
 .choose-title { font-size: clamp(2rem, 5vw, 3rem); margin: 0; }
 .choose-subtitle { color: #cfcfd6; margin: 8px 0 0; }
-.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; justify-items: center; margin-top: 12px; }
-.card { width: 100%; max-width: 440px; background: linear-gradient(160deg, #7a5b00, #c6a100 50%, #7a5b00); border-radius: 24px; padding: 16px; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; box-shadow: 0 20px 60px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); position: relative; overflow: hidden; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: stretch; margin-top: 12px; }
+.card { width: 100%; background: linear-gradient(160deg, #7a5b00, #c6a100 50%, #7a5b00); border-radius: 24px; padding: 16px; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; box-shadow: 0 20px 60px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); position: relative; overflow: hidden; }
 .card::after { content: ''; position: absolute; inset: -2px; pointer-events: none; border-radius: 26px; background: radial-gradient(400px 200px at 20% -10%, rgba(255,255,255,0.15), transparent); opacity: 0; transition: opacity .18s ease; }
 .card:hover { transform: translateY(-6px); box-shadow: 0 30px 90px rgba(0,0,0,.5); border-color: rgba(255,255,255,.2); }
 .card:hover::after { opacity: 1; }
