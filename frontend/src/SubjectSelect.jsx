@@ -4,8 +4,8 @@ import InfiniteMenu from './InfiniteMenu';
 
 const SUBJECTS = [
   {
-    key: 'Company Quizes',
-    title: 'Company Quizes',
+    key: 'Company Questions',
+    title: 'Company Questions',
     desc: 'ES6+, DOM, async, and more.',
     color: '#f7df1e',
     image: '/Images/CQuiz.png'

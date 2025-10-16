@@ -44,6 +44,10 @@ function GameArena() {
   const timerRef = useRef(null);
   const [playerAnim, setPlayerAnim] = useState('');
   const [challengerAnim, setChallengerAnim] = useState('');
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [suggestion, setSuggestion] = useState('');
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
 
   // Placeholder video sources. Replace with your actual files in /public/Videos
   const playerVideo = '/Videos/player.mp4';
@@ -52,6 +56,93 @@ function GameArena() {
   const question = useMemo(() => QUESTIONS[idx % QUESTIONS.length], [idx]);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  // Countdown and suggestion logic
+  useEffect(() => {
+    if (paused || gameOver) return;
+    setTimeLeft(15);
+    setSuggestion('');
+    const iv = setInterval(() => {
+      setTimeLeft((t) => {
+        if (selected !== null) return t; // stop counting when answered
+        if (t <= 1) {
+          clearInterval(iv);
+          if (!suggestion) setSuggestion(generateSuggestion(question));
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, paused]);
+
+  // Voice recognition setup/teardown
+  useEffect(() => {
+    return () => {
+      try { recognitionRef.current && recognitionRef.current.stop(); } catch {}
+    };
+  }, []);
+
+  const generateSuggestion = (q) => {
+    const text = (q.q || '').toLowerCase();
+    const opts = q.options.map((o) => o.toLowerCase());
+    // simple keyword heuristics
+    const heuristics = [
+      ['strict equality', /===|strict/],
+      ['filter', /filter|pass a test|subset/],
+      ['let', /block-scoped|block scoped|mutable/],
+      ['object', /typeof null|null/],
+    ];
+    for (const [optKeyword, re] of heuristics) {
+      if (re.test(text)) {
+        const idx = opts.findIndex((o) => o.includes(optKeyword));
+        if (idx !== -1) return `Hint: Consider "${q.options[idx]}"`;
+      }
+    }
+    // fallback: match any word overlap
+    let best = 0, bestIdx = 0;
+    opts.forEach((o, i) => {
+      const score = o.split(/\W+/).reduce((s, w) => s + (w && text.includes(w) ? 1 : 0), 0);
+      if (score > best) { best = score; bestIdx = i; }
+    });
+    return `Hint: Maybe "${q.options[bestIdx]}"`;
+  };
+
+  const toggleListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Speech recognition is not supported in this browser.'); return; }
+    if (!listening) {
+      const rec = new SR();
+      rec.lang = 'en-US';
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.onresult = (e) => {
+        if (selected !== null || paused) return;
+        const transcript = Array.from(e.results).map(r => r[0].transcript).join(' ').toLowerCase();
+        // try to map spoken words to an option
+        const numbered = transcript.match(/(option|choice|number|no\.?|answer)\s*(one|two|three|four|1|2|3|4|first|second|third|fourth|a|b|c|d)/);
+        const words = ['one','two','three','four','1','2','3','4','first','second','third','fourth','a','b','c','d'];
+        const numMap = { one:0, 1:0, first:0, a:0, two:1, 2:1, second:1, b:1, three:2, 3:2, third:2, c:2, four:3, 4:3, fourth:3, d:3 };
+        let matchedIndex = null;
+        if (numbered) {
+          const token = numbered[2];
+          matchedIndex = numMap[token];
+        }
+        if (matchedIndex == null) {
+          matchedIndex = question.options.findIndex(op => transcript.includes(op.toLowerCase()));
+        }
+        if (matchedIndex != null && matchedIndex >= 0 && matchedIndex < question.options.length) {
+          onSelect(matchedIndex);
+        }
+      };
+      rec.onend = () => { setListening(false); };
+      try { rec.start(); setListening(true); recognitionRef.current = rec; } catch {}
+    } else {
+      try { recognitionRef.current && recognitionRef.current.stop(); } catch {}
+      setListening(false);
+    }
+  };
 
   const onSelect = (i) => {
     if (selected !== null || paused) return;
@@ -66,6 +157,7 @@ function GameArena() {
       setPlayerHP((hp) => Math.max(0, hp - 20));
       setPlayerAnim('hit');
     }
+    setSuggestion('');
     timerRef.current = setTimeout(() => {
       setSelected(null);
       setResult('');
@@ -105,6 +197,12 @@ function GameArena() {
           {!gameOver ? (
             <>
               <h2 className="question">{question.q}</h2>
+              <div className="quiz-meta" style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12}}>
+                <div className="timer" style={{opacity:0.9}}>Time left: {timeLeft}s</div>
+                <div className="actions" style={{display:'flex', gap:8}}>
+                  <button className="btn gray" onClick={toggleListening} type="button">{listening ? 'Stop Mic' : 'Use Voice'}</button>
+                </div>
+              </div>
               <div className="options">
                 {question.options.map((op, i) => {
                   let cls = 'option';
@@ -123,6 +221,9 @@ function GameArena() {
                 <button className="btn yellow" disabled>Submit</button>
                 <button className="btn gray" onClick={() => setPaused((p) => !p)}>{paused ? 'Resume' : 'Pause'}</button>
               </div>
+              {suggestion && selected === null && (
+                <div className="result" style={{opacity:0.9}}>{suggestion}</div>
+              )}
               {result && <div className="result">{result}</div>}
             </>
           ) : (
