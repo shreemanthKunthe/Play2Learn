@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './GameArena.css';
+import AptitudePuzzle from './AptitudePuzzle';
 
 // Subject-specific question banks
 const QUESTIONS_BY_SUBJECT = {
@@ -82,6 +83,36 @@ const QUESTIONS_BY_SUBJECT = {
   ],
 };
 
+// Visual puzzles (Cognizant-style aptitude) scoped to the subject 'Game Based Aptitude'
+const PUZZLES_BY_SUBJECT = {
+  'game based aptitude': [
+    {
+      grid: [
+        ['plus-blue','plus-blue','plus-blue','empty'],
+        ['circle-green','triangle-orange','circle-green','unknown'],
+        ['empty','empty','empty','empty'],
+        ['square-red','empty','empty','empty'],
+      ],
+      options: ['square-red','circle-green','plus-blue','triangle-orange'],
+      answer: 3,
+      rule: { type: 'row-sequence', axis: 'row', index: 1, sequence: ['circle-green','triangle-orange','circle-green','triangle-orange'], cyclic: true },
+      explain: 'Row pattern alternates Circle, Triangle. The missing tile should be Triangle (orange).',
+    },
+    {
+      grid: [
+        ['square-red','circle-green','plus-blue','triangle-orange'],
+        ['square-red','circle-green','plus-blue','unknown'],
+        ['empty','empty','empty','empty'],
+        ['empty','empty','empty','empty'],
+      ],
+      options: ['triangle-orange','plus-blue','circle-green','square-red'],
+      answer: 0,
+      rule: { type: 'row-sequence', axis: 'row', index: 1, sequence: ['square-red','circle-green','plus-blue','triangle-orange'], cyclic: false },
+      explain: 'Second row follows the same left-to-right sequence as the first row.',
+    },
+  ],
+};
+
 function GameArena() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -119,15 +150,181 @@ function GameArena() {
   }, [subject]);
   const question = useMemo(() => questions[idx % questions.length], [idx, questions]);
 
+  const puzzles = useMemo(() => PUZZLES_BY_SUBJECT[subject] || null, [subject]);
+  const usePuzzle = !!puzzles; // subjects that use visual puzzles
+  const [generatedPuzzle, setGeneratedPuzzle] = useState(null);
+  const puzzle = useMemo(() => {
+    // prefer generated puzzle when in puzzle mode
+    return usePuzzle ? generatedPuzzle : null;
+  }, [usePuzzle, generatedPuzzle]);
+
+  // Procedural puzzle generator
+  const SHAPES = ['plus','circle','triangle','square'];
+  const COLORS = ['blue','green','orange','red'];
+  const tok = (shape, color) => `${shape}-${color}`;
+  const randInt = (n) => Math.floor(Math.random()*n);
+  const shuffle = (arr) => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=randInt(i+1); [a[i],a[j]]=[a[j],a[i]];} return a; };
+
+  const generateRowSequencePuzzle = (size) => {
+    // Build a sequence of tokens length=size with shuffled shapes and random colors per shape
+    const shapes = shuffle(SHAPES).slice(0,size);
+    const colorMap = {};
+    shapes.forEach(s => { colorMap[s] = COLORS[randInt(COLORS.length)]; });
+    const sequence = shapes.map(s => tok(s, colorMap[s]));
+
+    // Grid size x size, include a reference row hint (row 0) and target row (row 1) following same sequence
+    const grid = Array.from({length:size}, () => Array.from({length:size}, () => 'empty'));
+    // hint row 0
+    for (let c=0;c<size;c++) grid[0][c] = sequence[c];
+    // target row 1
+    for (let c=0;c<size;c++) grid[1][c] = sequence[c];
+    const unknownCol = randInt(size);
+    const correctTok = grid[1][unknownCol];
+    grid[1][unknownCol] = 'unknown';
+
+    // Options: include correct + 3 distractors (change shape/color)
+    const distractors = new Set();
+    while (distractors.size < 3) {
+      const s = SHAPES[randInt(SHAPES.length)];
+      const c = COLORS[randInt(COLORS.length)];
+      const candidate = tok(s,c);
+      if (candidate !== correctTok) distractors.add(candidate);
+    }
+    const options = shuffle([correctTok, ...Array.from(distractors)]).slice(0,4);
+    const answer = options.indexOf(correctTok);
+
+    return {
+      grid,
+      options,
+      answer,
+      rule: { type: 'row-sequence', axis: 'row', index: 1, sequence, cyclic: false },
+      explain: 'Second row follows the same left-to-right sequence as the first row.'
+    };
+  };
+
+  // Generate a fresh puzzle whenever level/idx/subject changes in puzzle mode
+  useEffect(() => {
+    if (!usePuzzle) { setGeneratedPuzzle(null); return; }
+    const size = level >= 2 ? 4 : 3; // scale difficulty by level
+    setGeneratedPuzzle(generateRowSequencePuzzle(size));
+  }, [usePuzzle, level, idx, subject]);
+  const [puzzleSelected, setPuzzleSelected] = useState(null);
+  const [selectedCorrect, setSelectedCorrect] = useState(null);
+
+  // Token helpers for rule engine
+  const tokenShape = (tok) => {
+    if (!tok) return tok;
+    if (tok.startsWith('plus')) return 'plus';
+    if (tok.startsWith('circle')) return 'circle';
+    if (tok.startsWith('triangle')) return 'triangle';
+    if (tok.startsWith('square')) return 'square';
+    return tok;
+  };
+  const tokenColor = (tok) => {
+    if (!tok) return tok;
+    const parts = tok.split('-');
+    return parts[1] || null;
+  };
+
+  // Rule engine
+  const validatePuzzle = (pz, pickIndex) => {
+    if (!pz) return false;
+    const { grid, options, answer, rule } = pz;
+    const candidate = options[pickIndex];
+    // find unknown position
+    let ur = -1, uc = -1;
+    for (let r=0;r<grid.length;r++){
+      const c = grid[r].indexOf('unknown');
+      if (c !== -1){ ur=r; uc=c; break; }
+    }
+    if (ur === -1) return pickIndex === answer; // fallback
+
+    // place candidate
+    const g = grid.map(row => row.slice());
+    g[ur][uc] = candidate;
+
+    // rule types
+    const checkRowSequence = () => {
+      const seq = rule.sequence || [];
+      const row = g[rule.index] || [];
+      if (!row.length || !seq.length) return false;
+      // If cyclic, allow wrapping; else exact match length
+      for (let i=0;i<row.length;i++){
+        const expected = rule.cyclic ? seq[i % seq.length] : seq[i];
+        if (!expected) return false;
+        if (row[i] !== expected) return false;
+      }
+      return true;
+    };
+
+    const checkColumnSequence = () => {
+      const seq = rule.sequence || [];
+      const colIdx = rule.index;
+      for (let r=0;r<g.length;r++){
+        const expected = rule.cyclic ? seq[r % seq.length] : seq[r];
+        if (!expected) return false;
+        if (g[r][colIdx] !== expected) return false;
+      }
+      return true;
+    };
+
+    const checkCounting = () => {
+      const set = rule.set || [];
+      const axis = rule.axis || 'row';
+      const colCount = g[0]?.length || 0;
+      const rowCount = g.length;
+      if (axis === 'row'){
+        return g.every(row => {
+          const seen = new Set();
+          for (const cell of row){ if (cell !== 'empty'){ seen.add(cell); } }
+          return set.every(tok => seen.has(tok));
+        });
+      } else {
+        for (let c=0;c<colCount;c++){
+          const seen = new Set();
+          for (let r=0;r<rowCount;r++){ const cell=g[r][c]; if (cell!=='empty') seen.add(cell); }
+          if (!set.every(tok => seen.has(tok))) return false;
+        }
+        return true;
+      }
+    };
+
+    const checkSetCoverage = () => {
+      // each row contains exactly one of each SHAPE (color-agnostic)
+      const shapes = ['plus','circle','triangle','square'];
+      return g.every(row => {
+        const seen = new Set();
+        for (const cell of row){ if (cell!=='empty'){ seen.add(tokenShape(cell)); } }
+        return shapes.every(s => seen.has(s));
+      });
+    };
+
+    let ok = false;
+    if (rule){
+      switch(rule.type){
+        case 'row-sequence': ok = rule.axis==='row' ? checkRowSequence() : checkColumnSequence(); break;
+        case 'column-sequence': ok = checkColumnSequence(); break;
+        case 'counting': ok = checkCounting(); break;
+        case 'set-coverage': ok = checkSetCoverage(); break;
+        default: ok = (pickIndex === answer);
+      }
+    } else {
+      ok = (pickIndex === answer);
+    }
+    return ok;
+  };
+
   // Reset score when subject changes
   useEffect(() => {
     setCorrectCount(0);
     setTotalCount(0);
+    setPuzzleSelected(null);
+    setSelectedCorrect(null);
   }, [subject]);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  // Countdown and suggestion logic (timer scales by level)
+  // Countdown and suggestion logic (timer scales by level). Hints suppressed for puzzle mode.
   useEffect(() => {
     if (paused || gameOver) return;
     const initial = Math.max(8, 15 - level * 2);
@@ -138,7 +335,7 @@ function GameArena() {
         if (selected !== null) return t; // stop counting when answered
         if (t <= 1) {
           clearInterval(iv);
-          if (!suggestion) setSuggestion(generateSuggestion(question));
+          if (!usePuzzle && !suggestion) setSuggestion(generateSuggestion(question));
           return 0;
         }
         return t - 1;
@@ -146,7 +343,13 @@ function GameArena() {
     }, 1000);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, paused, level]);
+  }, [idx, paused, level, usePuzzle]);
+
+  // Reset puzzle pick on question advance
+  useEffect(() => {
+    setPuzzleSelected(null);
+    setSelectedCorrect(null);
+  }, [idx]);
 
   // Voice recognition setup/teardown
   useEffect(() => {
@@ -218,7 +421,8 @@ function GameArena() {
   const onSelect = (i) => {
     if (selected !== null || paused) return;
     setSelected(i);
-    const correct = i === question.answer;
+    const correct = usePuzzle ? validatePuzzle(puzzle, i) : (i === question.answer);
+    if (usePuzzle) setSelectedCorrect(!!correct);
     setTotalCount((n) => n + 1);
     if (correct) {
       setResult('Correct!');
@@ -252,78 +456,96 @@ function GameArena() {
         </div>
 
         <div className="arena-stage">
-          <div className={`stage half left ${playerAnim}`}>
-            <video src="/Videos/Player.mp4" autoPlay muted loop playsInline />
-            <div className="overlay">
-              <div className="hp-bar green"><div className="hp-fill" style={{ width: `${playerHP}%` }} /></div>
-              <span className="label">Player</span>
+          <div className="video-stack">
+            <div className={`stage half left ${playerAnim}`}>
+              <video src="/Videos/Player.mp4" autoPlay muted loop playsInline />
+              <div className="overlay">
+                <div className="hp-bar green"><div className="hp-fill" style={{ width: `${playerHP}%` }} /></div>
+                <span className="label">Player</span>
+              </div>
+            </div>
+            <div className={`stage half right ${challengerAnim}`}>
+              <video src={challengerVideo} autoPlay muted loop playsInline />
+              <div className="overlay">
+                <div className="hp-bar red"><div className="hp-fill" style={{ width: `${challengerHP}%` }} /></div>
+                <span className="label">Challenger</span>
+              </div>
             </div>
           </div>
-          <div className={`stage half right ${challengerAnim}`}>
-            <video src={challengerVideo} autoPlay muted loop playsInline />
-            <div className="overlay">
-              <div className="hp-bar red"><div className="hp-fill" style={{ width: `${challengerHP}%` }} /></div>
-              <span className="label">Challenger</span>
-            </div>
-          </div>
-          <div className="vs-mid">VS</div>
-          <div className="quiz quiz-overlay">
-          {!gameOver ? (
-            <>
-              <h2 className="question">{question.q}</h2>
-              <div className="quiz-meta" style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12}}>
-                <div className="timer" style={{opacity:0.9}}>Time left: {timeLeft}s</div>
-                <div className="actions" style={{display:'flex', gap:8}}>
-                  <button className="btn gray" onClick={toggleListening} type="button">{listening ? 'Stop Mic' : 'Use Voice'}</button>
+          <div className="quiz quiz-card">
+            {!gameOver ? (
+              <>
+                {!usePuzzle && <h2 className="question">{question.q}</h2>}
+                <div className="quiz-meta" style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12}}>
+                  <div className="timer" style={{opacity:0.9}}>Time left: {timeLeft}s</div>
+                  <div className="actions" style={{display:'flex', gap:8}}>
+                    <button className="btn gray" onClick={toggleListening} type="button">{listening ? 'Stop Mic' : 'Use Voice'}</button>
+                  </div>
+                </div>
+                {usePuzzle ? (
+                  <AptitudePuzzle
+                    puzzle={puzzle}
+                    disabled={selected !== null || paused}
+                    selectedIndex={puzzleSelected}
+                    onPick={(i)=>setPuzzleSelected(i)}
+                    revealToken={selected !== null ? puzzle?.options?.[selected] : null}
+                    correctState={selected !== null ? selectedCorrect : null}
+                  />
+                ) : (
+                  <div className="options">
+                    {question.options.map((op, i) => {
+                      let cls = 'option';
+                      if (selected !== null) {
+                        if (i === question.answer && selected === i) cls += ' correct';
+                        else if (selected === i && i !== question.answer) cls += ' wrong';
+                      }
+                      return (
+                        <button key={i} className={cls} onClick={() => onSelect(i)} disabled={selected !== null || paused}>
+                          {op}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="controls">
+                  <button
+                    className="btn yellow"
+                    disabled={usePuzzle ? (puzzleSelected==null || selected!==null || paused) : true}
+                    onClick={() => { if(usePuzzle && puzzleSelected!=null) onSelect(puzzleSelected); }}
+                  >
+                    Submit
+                  </button>
+                  <button className="btn gray" onClick={() => setPaused((p) => !p)}>{paused ? 'Resume' : 'Pause'}</button>
+                </div>
+                {!usePuzzle && suggestion && selected === null && (
+                  <div className="result" style={{opacity:0.9}}>{suggestion}</div>
+                )}
+                {result && <div className="result">{result}</div>}
+              </>
+            ) : (
+              <div className="gameover">
+                {playerHP === 0 ? 'Game Over - Challenger Wins!' : 'Victory - You Win!'}
+                <div className="score" style={{marginTop:12}}>
+                  Score: {correctCount}/{totalCount} ({totalCount ? Math.round((correctCount/totalCount)*100) : 0}%)
+                </div>
+                <div className="go-actions" style={{display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center'}}>
+                  {playerHP > 0 && level < LEVELS.length - 1 && (
+                    <button className="btn yellow" onClick={() => {
+                      setIdx(0);
+                      setSelected(null);
+                      setResult('');
+                      setPlayerHP(100);
+                      setChallengerHP(100);
+                      setPlayerAnim('');
+                      setChallengerAnim('');
+                      setLevel((lv) => lv + 1);
+                    }}>Next Level</button>
+                  )}
+                  <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); setCorrectCount(0); setTotalCount(0); setLevel(0); }}>Restart</button>
+                  <button className="btn gray" onClick={() => navigate('/subjects')}>Back</button>
                 </div>
               </div>
-              <div className="options">
-                {question.options.map((op, i) => {
-                  let cls = 'option';
-                  if (selected !== null) {
-                    if (i === question.answer && selected === i) cls += ' correct';
-                    else if (selected === i && i !== question.answer) cls += ' wrong';
-                  }
-                  return (
-                    <button key={i} className={cls} onClick={() => onSelect(i)} disabled={selected !== null || paused}>
-                      {op}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="controls">
-                <button className="btn yellow" disabled>Submit</button>
-                <button className="btn gray" onClick={() => setPaused((p) => !p)}>{paused ? 'Resume' : 'Pause'}</button>
-              </div>
-              {suggestion && selected === null && (
-                <div className="result" style={{opacity:0.9}}>{suggestion}</div>
-              )}
-              {result && <div className="result">{result}</div>}
-            </>
-          ) : (
-            <div className="gameover">
-              {playerHP === 0 ? 'Game Over - Challenger Wins!' : 'Victory - You Win!'}
-              <div className="score" style={{marginTop:12}}>
-                Score: {correctCount}/{totalCount} ({totalCount ? Math.round((correctCount/totalCount)*100) : 0}%)
-              </div>
-              <div className="go-actions" style={{display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center'}}>
-                {playerHP > 0 && level < LEVELS.length - 1 && (
-                  <button className="btn yellow" onClick={() => {
-                    setIdx(0);
-                    setSelected(null);
-                    setResult('');
-                    setPlayerHP(100);
-                    setChallengerHP(100);
-                    setPlayerAnim('');
-                    setChallengerAnim('');
-                    setLevel((lv) => lv + 1);
-                  }}>Next Level</button>
-                )}
-                <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); setCorrectCount(0); setTotalCount(0); setLevel(0); }}>Restart</button>
-                <button className="btn gray" onClick={() => navigate('/subjects')}>Back</button>
-              </div>
-            </div>
-          )}
+            )}
           </div>
         </div>
       </div>

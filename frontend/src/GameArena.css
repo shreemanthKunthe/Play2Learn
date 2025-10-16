@@ -26,9 +26,10 @@
 .gameover { text-align: center; font-size: clamp(1.3rem, 3vw, 1.8rem); font-weight: 800; }
 .go-actions { margin-top: 16px; display: flex; gap: 12px; justify-content: center; }
 
-/* New split video stage */
-.arena-stage { position: relative; display: flex; width: 100%; height: 75vh; gap: 8px; }
-.stage.half { flex: 1; position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+/* Two-column layout: left videos stacked, right quiz card */
+.arena-stage { position: relative; display: grid; grid-template-columns: 1.1fr 1.4fr; align-items: center; width: 100%; height: 75vh; gap: 24px; }
+.video-stack { display: grid; grid-template-rows: 1fr 1fr; gap: 24px; height: 100%; }
+.stage.half { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.35); background:#fff; }
 .stage video { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.9); }
 .stage .overlay { position: absolute; left: 12px; right: 12px; top: 12px; display: flex; align-items: center; gap: 10px; }
 
@@ -49,15 +50,16 @@
   100% { opacity: 0; }
 }
 
-/* Centered quiz overlay */
-.quiz-overlay { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 3; width: min(900px, 94%); background: rgba(11, 12, 16, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
-.quiz-overlay .question { margin-top: 0; }
+/* Right side quiz card */
+.quiz-card { width: 100%; align-self: center; background: rgba(11,12,16,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+.quiz-card .question { margin-top: 0; }
 
-/* VS marker */
-.vs-mid { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; font-weight: 900; letter-spacing: 2px; color: #ffd700; font-size: clamp(2.5rem, 10vw, 7rem); text-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 0 24px rgba(255, 215, 0, 0.35); -webkit-text-stroke: 2px rgba(0,0,0,0.35); pointer-events: none; }
+/* VS marker removed in professional layout */
+.vs-mid { display: none; }
 
 @media (max-width: 900px) {
-  .arena-stage { height: 60vh; gap: 10px; }
-  .vs-mid { font-size: clamp(2rem, 14vw, 4rem); opacity: 0.9; }
+  .arena-stage { height: 60vh; gap: 16px; grid-template-columns: 1fr; }
+  .video-stack { grid-template-rows: 1fr; }
+  .quiz-card { align-self: stretch; }
   .options { grid-template-columns: 1fr; }
 }

@@ -4,6 +4,13 @@ import InfiniteMenu from './InfiniteMenu';
 
 const SUBJECTS = [
   {
+    key: 'Game Based Aptitude',
+    title: 'Game Based Aptitude',
+    desc: 'Visual pattern puzzles with shapes and colors.',
+    color: '#8a2be2',
+    image: '/Images/gd.png'
+  },
+  {
     key: 'Company Questions',
     title: 'Company Questions',
     desc: 'ES6+, DOM, async, and more.',
