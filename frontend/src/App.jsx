@@ -97,6 +97,7 @@ function App() {
             boxShadow: '0 25px 80px rgba(0, 0, 0, 0.3)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             height: '100%',
+            minHeight: 'min(60svh, 420px)',
             display: 'flex',
             alignItems: 'stretch'
           }}>
@@ -108,10 +109,12 @@ function App() {
               loop
               playsInline
               style={{
+                position: 'absolute',
+                inset: 0,
                 width: '100%',
                 height: '100%',
-                maxHeight: 'min(60svh, 420px)',
-                objectFit: 'cover'
+                objectFit: 'cover',
+                display: 'block'
               }}
             />
             {/* Removed play overlay per request */}
@@ -336,6 +339,7 @@ function App() {
             boxShadow: '0 25px 80px rgba(0, 0, 0, 0.3)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             height: '100%',
+            minHeight: 'min(70svh, 560px)',
             display: 'flex',
             alignItems: 'stretch',
             justifyContent: 'center'
@@ -347,7 +351,7 @@ function App() {
               muted
               loop
               playsInline
-              style={{ width: '100%', height: '100%', maxHeight: 'min(70svh, 560px)', objectFit: 'cover' }}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </div>
         </div>
