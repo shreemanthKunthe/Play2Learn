@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './GameArena.css';
 import AptitudePuzzle from './AptitudePuzzle';
 
-// Subject-specific question banks
+// Subject-specific question banks (legacy flat bank)
 const QUESTIONS_BY_SUBJECT = {
   // Default/general JS bank
   default: [
@@ -83,6 +83,70 @@ const QUESTIONS_BY_SUBJECT = {
   ],
 };
 
+// Level-based difficulty banks; prefer these if present
+// Easy -> Level 0, Medium -> Level 1, Hard -> Level 2+
+const DIFFICULTY_QUESTIONS_BY_SUBJECT = {
+  default: {
+    easy: [
+      { q: 'Which method adds an element to the end of an array?', options: ['push','pop','shift','unshift'], answer: 0 },
+      { q: 'What keyword creates a constant?', options: ['let','var','const','static'], answer: 2 },
+      { q: 'What is the type of NaN?', options: ['number','NaN','undefined','object'], answer: 0 },
+    ],
+    medium: [
+      { q: 'What does Array.prototype.reduce do?', options: ['Filters array','Transforms to single value','Maps values','Sorts array'], answer: 1 },
+      { q: 'Which equality avoids type coercion?', options: ['==','===','!=','='], answer: 1 },
+      { q: 'Which copies an array?', options: ['a2 = a1','a2 = [...a1]','a2 = a1.push()','a2 = a1.slice(1)'], answer: 1 },
+    ],
+    hard: [
+      { q: 'What is the output of [1,2,3].map(parseInt)?', options: ['[1,2,3]','[1,NaN,NaN]','[1,NaN,3]','Error'], answer: 1 },
+      { q: 'typeof null is?', options: ['null','object','undefined','number'], answer: 1 },
+      { q: 'Promise.race resolves when?', options: ['All resolve','First settles','Any rejects','All reject'], answer: 1 },
+    ],
+  },
+  'company questions': {
+    easy: [
+      { q: 'You see a minor UI bug before demo. Best first step?', options: ['Refactor whole UI','Log and hotfix after demo','Open ticket and ignore','Fix quickly if low risk'], answer: 3 },
+      { q: 'Build failing due to lint. What next?', options: ['Disable lint','Fix lint errors','Force merge','Rollback unrelated service'], answer: 1 },
+    ],
+    medium: [
+      { q: '70% time spent awaiting 4 sequential APIs. First step?', options: ['Minify assets','Parallelize and cache','Add spinner','SSR'], answer: 1 },
+      { q: 'Race conditions updating same record. Best fix?', options: ['Bigger server','Transactions/locking','Retry endlessly','Single thread'], answer: 1 },
+    ],
+    hard: [
+      { q: 'Secrets leaked in history. Immediate action?', options: ['Remove current code only','Rotate, purge history, add scanning','Document and continue','Move to .env only'], answer: 1 },
+      { q: 'Intermittent prod error with no logs. First approach?', options: ['Add structured logging + correlation IDs','Scale servers','Disable feature','Blame network'], answer: 0 },
+    ],
+  },
+  aptitude: {
+    easy: [
+      { q: 'What is 20% of 150?', options: ['20','25','30','35'], answer: 2 },
+      { q: 'Next in 3, 6, 9, ?', options: ['10','11','12','15'], answer: 2 },
+    ],
+    medium: [
+      { q: 'Average of 10, 20, 30, 40?', options: ['20','25','30','35'], answer: 1 },
+      { q: 'Simplify ratio 18:24', options: ['3:4','2:3','4:3','6:8'], answer: 0 },
+    ],
+    hard: [
+      { q: 'Train A is 20% faster than B. If B takes 60 min, A takes?', options: ['48m','50m','55m','58m'], answer: 0 },
+      { q: 'Compound interest yields higher than simple when?', options: ['Rate=0','Time=0','Always for t>1','Never'], answer: 2 },
+    ],
+  },
+  'web development': {
+    easy: [
+      { q: 'CSS for 2D grids?', options: ['Flexbox','Grid','Float','Position'], answer: 1 },
+      { q: 'Semantic element?', options: ['div','span','section','b'], answer: 2 },
+    ],
+    medium: [
+      { q: 'Best for responsive images?', options: ['<img srcset>','<picture> only','Fixed px sizes','CSS only'], answer: 0 },
+      { q: 'Improve LCP first?', options: ['Defer non-critical','Remove all CSS','Add more JS','Inline all images'], answer: 0 },
+    ],
+    hard: [
+      { q: 'Specificity order (low→high)?', options: ['Inline < ID < Class < Element','Element < Class < ID < Inline','Class < Element < ID < Inline','ID < Inline < Class < Element'], answer: 1 },
+      { q: 'Contain layout thrashing by?', options: ['Synchronous measurements','requestAnimationFrame batching','Force reflow repeatedly','Avoid CSS transforms'], answer: 1 },
+    ],
+  },
+};
+
 // Visual puzzles (Cognizant-style aptitude) scoped to the subject 'Game Based Aptitude'
 const PUZZLES_BY_SUBJECT = {
   'game based aptitude': [
@@ -146,8 +210,15 @@ function GameArena() {
 
   const questions = useMemo(() => {
     const key = subject; // already lowercased
+    const banks = DIFFICULTY_QUESTIONS_BY_SUBJECT[key];
+    if (banks) {
+      const bucket = level >= 2 ? 'hard' : level === 1 ? 'medium' : 'easy';
+      const set = banks[bucket] || [];
+      if (set.length) return set;
+    }
+    // fallback to legacy flat bank
     return QUESTIONS_BY_SUBJECT[key] || QUESTIONS_BY_SUBJECT.default;
-  }, [subject]);
+  }, [subject, level]);
   const question = useMemo(() => questions[idx % questions.length], [idx, questions]);
 
   const puzzles = useMemo(() => PUZZLES_BY_SUBJECT[subject] || null, [subject]);
