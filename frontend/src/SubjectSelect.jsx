@@ -1,54 +1,50 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import './SubjectSelect.css';
+import InfiniteMenu from './InfiniteMenu';
 
 const SUBJECTS = [
   {
-    key: 'javascript',
-    title: 'JavaScript',
+    key: 'Game Based Aptitude',
+    title: 'Game Based Aptitude',
+    desc: 'Visual pattern puzzles with shapes and colors.',
+    color: '#8a2be2',
+    image: '/Images/gd.png'
+  },
+  {
+    key: 'Company Questions',
+    title: 'Company Questions',
     desc: 'ES6+, DOM, async, and more.',
     color: '#f7df1e',
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/CQuiz.png'
   },
   {
-    key: 'python',
-    title: 'Python',
+    key: 'Aptitude',
+    title: 'Aptitude',
     desc: 'Basics, OOP, data, and libs.',
     color: '#3776ab',
-    image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/Aptitude.png'
   },
   {
-    key: 'htmlcss',
-    title: 'HTML & CSS',
+    key: 'Web Development',
+    title: 'Web Development',
     desc: 'Layouts, flex/grid, responsive.',
     color: '#ff6a00',
-    image: 'https://images.unsplash.com/photo-1520975922420-6c0b5abe3462?q=80&w=1200&auto=format&fit=crop'
+    image: '/Images/Web.png'
   },
 ];
 
 export default function SubjectSelect() {
-  const navigate = useNavigate();
+
+  const items = SUBJECTS.map((s) => ({
+    image: s.image,
+    link: `/arena?subject=${encodeURIComponent(s.key)}`,
+    title: s.title,
+    description: s.desc,
+  }));
 
   return (
     <div className="subjects-page">
-      <div className="subjects-container">
-        <div className="subjects-header">
-          <h1 className="title">Pick a Subject</h1>
-          <p className="subtitle">Start with JavaScript or explore more. Your journey begins here.</p>
-        </div>
-        <div className="grid">
-          {SUBJECTS.map((s) => (
-            <button key={s.key} className="subject-card" onClick={() => navigate(`/choose?subject=${s.key}`)}>
-              <div className="thumb" style={{ backgroundImage: `url(${s.image})` }} />
-              <div className="meta">
-                <span className="pill" style={{ background: s.color, color: '#0b0c10' }}>{s.title}</span>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="infinite-wrap"><InfiniteMenu items={items} /></div>
     </div>
   );
 }

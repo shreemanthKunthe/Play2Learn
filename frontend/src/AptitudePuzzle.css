@@ -1,0 +1,25 @@
+.puzzle-root{display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center;width:100%;height:100%;padding:16px}
+.puzzle-grid{display:grid;grid-auto-rows:minmax(64px,1fr);gap:10px;background:#1d1f25;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.08)}
+.puzzle-row{display:grid;grid-template-columns:repeat(4, minmax(64px,1fr));gap:10px}
+.puzzle-cell{display:flex;align-items:center;justify-content:center;background:#2a2d36;border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:transform .12s ease, box-shadow .12s ease}
+.puzzle-cell.unknown{background:#23252c}
+.puzzle-cell.droppable:hover{box-shadow:0 0 0 2px #4da3ff inset;transform:scale(1.02)}
+.puzzle-cell.reveal.ok{box-shadow:0 0 0 2px #2ecc71 inset}
+.puzzle-cell.reveal.bad{box-shadow:0 0 0 2px #e74c3c inset}
+.qmark{font-size:28px;color:#ffcc33;font-weight:800}
+.puzzle-options{display:flex;gap:12px;align-items:center;justify-content:center;background:#1d3d8f;padding:12px 16px;border-radius:12px}
+.puzzle-option{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);cursor:pointer;padding:8px;border-radius:10px;transition:transform .15s ease, box-shadow .15s ease}
+.puzzle-option:hover{transform:translateY(-2px)}
+.puzzle-option.selected{box-shadow:0 0 0 2px #ffd700 inset}
+.puzzle-option.is-correct{box-shadow:0 0 0 2px #2ecc71 inset}
+.puzzle-option.is-wrong{box-shadow:0 0 0 2px #e74c3c inset}
+.shape{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:#e0e0e0}
+.shape.empty{background:transparent;border:none}
+.shape.square-red{background:#a22d2d}
+.shape.plus-blue{position:relative;background:#2d6aa2}
+.shape.plus-blue::before,.shape.plus-blue::after{content:"";position:absolute;background:#fff;border-radius:2px}
+.shape.plus-blue::before{width:60%;height:18%}
+.shape.plus-blue::after{height:60%;width:18%}
+.shape.circle-green{background:#2da26b;border-radius:50%}
+.shape.triangle-orange{position:relative;background:transparent}
+.shape.triangle-orange::before{content:"";width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:34px solid #ff8c1a}
