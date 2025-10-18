@@ -199,7 +199,7 @@ function GameArena() {
   const [totalCount, setTotalCount] = useState(0);
   const LEVELS = useMemo(() => ([
     { name: 'Level 1: Trainee', challengerVideo: '/Videos/Challenger.mp4' },
-    { name: 'Level 2: Specialist', challengerVideo: '/Videos/Challenger2.mp4' },
+    { name: 'Level 2: Specialist', challengerVideo: '/Videos/Blue.mp4' },
     { name: 'Level 3: Boss', challengerVideo: '/Videos/Challenger3.mp4' },
   ]), []);
   const [level, setLevel] = useState(0);
@@ -236,66 +236,124 @@ function GameArena() {
   const randInt = (n) => Math.floor(Math.random()*n);
   const shuffle = (arr) => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=randInt(i+1); [a[i],a[j]]=[a[j],a[i]];} return a; };
 
-  const generateRowSequencePuzzle = (size) => {
-    // Build a sequence of tokens length=size with shuffled shapes and random colors per shape
-    const shapes = shuffle(SHAPES).slice(0,size);
-    const colorMap = {};
-    shapes.forEach(s => { colorMap[s] = COLORS[randInt(COLORS.length)]; });
-    const sequence = shapes.map(s => tok(s, colorMap[s]));
+  // Token helpers for rule engine (moved up so generators can use them)
+  const tokenShape = (t) => {
+    if (!t) return t;
+    if (t.startsWith('plus')) return 'plus';
+    if (t.startsWith('circle')) return 'circle';
+    if (t.startsWith('triangle')) return 'triangle';
+    if (t.startsWith('square')) return 'square';
+    return t;
+  };
+  const tokenColor = (t) => {
+    if (!t) return t;
+    const parts = t.split('-');
+    return parts[1] || null;
+  };
 
-    // Grid size x size, include a reference row hint (row 0) and target row (row 1) following same sequence
-    const grid = Array.from({length:size}, () => Array.from({length:size}, () => 'empty'));
-    // hint row 0
-    for (let c=0;c<size;c++) grid[0][c] = sequence[c];
-    // target row 1
-    for (let c=0;c<size;c++) grid[1][c] = sequence[c];
-    const unknownCol = randInt(size);
-    const correctTok = grid[1][unknownCol];
-    grid[1][unknownCol] = 'unknown';
-
-    // Options: include correct + 3 distractors (change shape/color)
+  // Procedural puzzle generators with difficulty scaling
+  const makeOptions = (correctTok, similarBias=0.7) => {
+    // Generate distractors with increasing similarity (same shape or same color) as similarBias grows
     const distractors = new Set();
+    const [cShape, cColor] = [tokenShape(correctTok), tokenColor(correctTok)];
     while (distractors.size < 3) {
-      const s = SHAPES[randInt(SHAPES.length)];
-      const c = COLORS[randInt(COLORS.length)];
-      const candidate = tok(s,c);
+      let s = SHAPES[randInt(SHAPES.length)];
+      let c = COLORS[randInt(COLORS.length)];
+      if (Math.random() < similarBias) {
+        // keep either shape or color to increase confusion
+        if (Math.random() < 0.5) { s = cShape; } else { c = cColor; }
+      }
+      const candidate = tok(s, c);
       if (candidate !== correctTok) distractors.add(candidate);
     }
     const options = shuffle([correctTok, ...Array.from(distractors)]).slice(0,4);
-    const answer = options.indexOf(correctTok);
+    return { options, answer: options.indexOf(correctTok) };
+  };
 
-    return {
-      grid,
-      options,
-      answer,
-      rule: { type: 'row-sequence', axis: 'row', index: 1, sequence, cyclic: false },
-      explain: 'Second row follows the same left-to-right sequence as the first row.'
-    };
+  const genRowSequence = (size, similarity=0.5) => {
+    const shapes = shuffle(SHAPES).slice(0, size);
+    const colorMap = {};
+    shapes.forEach(s => { colorMap[s] = COLORS[randInt(COLORS.length)]; });
+    const sequence = shapes.map(s => tok(s, colorMap[s]));
+    const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => 'empty'));
+    for (let c=0; c<size; c++) grid[0][c] = sequence[c];
+    for (let c=0; c<size; c++) grid[1][c] = sequence[c];
+    const unknownCol = randInt(size);
+    const correctTok = grid[1][unknownCol];
+    grid[1][unknownCol] = 'unknown';
+    const { options, answer } = makeOptions(correctTok, similarity);
+    return { grid, options, answer, rule: { type: 'row-sequence', axis: 'row', index: 1, sequence, cyclic: false }, explain: 'Match the row sequence.' };
+  };
+
+  const genColumnSequence = (size, similarity=0.6) => {
+    const shapes = shuffle(SHAPES).slice(0, size);
+    const colorMap = {};
+    shapes.forEach(s => { colorMap[s] = COLORS[randInt(COLORS.length)]; });
+    const sequence = shapes.map(s => tok(s, colorMap[s]));
+    const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => 'empty'));
+    for (let r=0; r<size; r++) grid[r][0] = sequence[r];
+    for (let r=0; r<size; r++) grid[r][1] = sequence[r];
+    const unknownRow = randInt(size);
+    const correctTok = grid[unknownRow][1];
+    grid[unknownRow][1] = 'unknown';
+    const { options, answer } = makeOptions(correctTok, similarity);
+    return { grid, options, answer, rule: { type: 'column-sequence', axis: 'column', index: 1, sequence, cyclic: false }, explain: 'Match the column sequence.' };
+  };
+
+  const genSetCoverage = (size, similarity=0.5) => {
+    // Each row must contain one of each shape (color-agnostic). Hide one cell.
+    const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => 'empty'));
+    for (let r=0; r<size; r++) {
+      const rowShapes = shuffle(SHAPES).slice(0, size);
+      for (let c=0; c<size; c++) {
+        const color = COLORS[randInt(COLORS.length)];
+        grid[r][c] = tok(rowShapes[c], color);
+      }
+    }
+    const ur = randInt(size); const uc = randInt(size);
+    const correctTok = grid[ur][uc];
+    grid[ur][uc] = 'unknown';
+    const { options, answer } = makeOptions(correctTok, similarity);
+    return { grid, options, answer, rule: { type: 'set-coverage' }, explain: 'Each row contains one of each shape.' };
+  };
+
+  const genCounting = (size, similarity=0.6) => {
+    // Each column must contain a specified set of tokens at least once
+    const set = [tok('plus', 'blue'), tok('circle', 'green')];
+    const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => 'empty'));
+    for (let c=0; c<size; c++) {
+      // place set items in random rows for this column
+      const rows = shuffle(Array.from({ length: size }, (_, i) => i)).slice(0, set.length);
+      for (let i=0; i<rows.length; i++) grid[rows[i]][c] = set[i];
+      // fill remaining with random tokens
+      for (let r=0; r<size; r++) if (grid[r][c] === 'empty') grid[r][c] = tok(SHAPES[randInt(SHAPES.length)], COLORS[randInt(COLORS.length)]);
+    }
+    const ur = randInt(size); const uc = randInt(size);
+    const correctTok = grid[ur][uc];
+    grid[ur][uc] = 'unknown';
+    const { options, answer } = makeOptions(correctTok, similarity);
+    return { grid, options, answer, rule: { type: 'counting', set, axis: 'column' }, explain: 'Each column contains at least one of each required token.' };
+  };
+
+  const generatePuzzle = (level) => {
+    const size = level >= 2 ? 4 + (Math.random() < 0.3 ? 1 : 0) : level === 1 ? 4 : 3; // sometimes 5x5 on hard
+    const similarity = level >= 2 ? 0.85 : level === 1 ? 0.7 : 0.5; // harder distractors on higher level
+    const pick = Math.random();
+    if (pick < 0.35) return genRowSequence(size, similarity);
+    if (pick < 0.6) return genColumnSequence(size, similarity);
+    if (pick < 0.85) return genSetCoverage(size, similarity);
+    return genCounting(size, similarity);
   };
 
   // Generate a fresh puzzle whenever level/idx/subject changes in puzzle mode
   useEffect(() => {
     if (!usePuzzle) { setGeneratedPuzzle(null); return; }
-    const size = level >= 2 ? 4 : 3; // scale difficulty by level
-    setGeneratedPuzzle(generateRowSequencePuzzle(size));
+    setGeneratedPuzzle(generatePuzzle(level));
   }, [usePuzzle, level, idx, subject]);
   const [puzzleSelected, setPuzzleSelected] = useState(null);
   const [selectedCorrect, setSelectedCorrect] = useState(null);
 
-  // Token helpers for rule engine
-  const tokenShape = (tok) => {
-    if (!tok) return tok;
-    if (tok.startsWith('plus')) return 'plus';
-    if (tok.startsWith('circle')) return 'circle';
-    if (tok.startsWith('triangle')) return 'triangle';
-    if (tok.startsWith('square')) return 'square';
-    return tok;
-  };
-  const tokenColor = (tok) => {
-    if (!tok) return tok;
-    const parts = tok.split('-');
-    return parts[1] || null;
-  };
+  
 
   // Rule engine
   const validatePuzzle = (pz, pickIndex) => {
