@@ -319,10 +319,10 @@ function App() {
           {/* Left: names list */}
           <div className="team-list">
             {[ 
-              { name: 'Priyanka P', title: 'Product Designer', desc: 'Leads product experience and visual design with a focus on clarity and delight.' },
-              { name: 'Raghunandan H', title: 'Frontend Engineer', desc: 'Owns UI engineering, performance, and accessibility across the app.' },
-              { name: 'Shreemanth K', title: 'Software Engineer', desc: 'Builds core features and architecture with a passion for clean code.' },
-              { name: 'Tejashwini G', title: 'Backend Engineer', desc: 'Designs APIs, data models, and resilient services that scale.' },
+              { name: 'Priyanka P', title: '', desc: 'Leads product experience and visual design with a focus on clarity and delight.' },
+              { name: 'Raghunandan H', title: '', desc: 'I’m an enthusiastic and detail-oriented developer with a strong interest in creating efficient and user-friendly applications. I have experience in frontend development using HTML, CSS, JavaScript, and React.js, along with a basic understanding of backend technologies like Node.js and Express.js. I enjoy learning new tools, working on real-world projects, and improving my coding skills to build creative and reliable solutions..' },
+              { name: 'Shreemanth K', title: 'UI/UX Designer , Frontend Engineer', desc: 'Builds core features and architecture with a passion for clean code.' },
+              { name: 'Tejashwini G', title: '', desc: 'Designs APIs, data models, and resilient services that scale.' },
             ].map((m, i) => (
               <div key={i} className="team-item reveal">
                 <div className="team-name">{m.name}</div>

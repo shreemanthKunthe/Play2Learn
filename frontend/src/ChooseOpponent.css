@@ -1,5 +1,5 @@
 .choose-page { 
-  min-height: 100vh; 
+  min-height: 100svh; 
   background: radial-gradient(1200px 600px at 10% -10%, rgba(255,204,51,0.06), transparent), 
               radial-gradient(1000px 500px at 110% 110%, rgba(0,198,255,0.05), transparent), 
               #0f0f0f; 
