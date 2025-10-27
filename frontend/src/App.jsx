@@ -35,9 +35,12 @@ function App() {
         <h2 className="logo">Play2Learn</h2>
         <ul className="nav-links">
           <li onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>How it works</li>
-          <li onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}>Team</li>
-          <li onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>Sign in</li>
+          <li onClick={() => document.getElementById('team')?.scrollIntoView({ behavior: 'smooth' })}>About</li>
         </ul>
+        <div className="nav-actions">
+          <button className="btn-ghost" onClick={() => navigate('/signup')}>Sign Up</button>
+          <button className="lang-switch" aria-label="Language">EN ▾</button>
+        </div>
       </nav>
 
       <div className="hero-content">
@@ -124,7 +127,7 @@ function App() {
           <div className="reveal">
             <h2 style={{
               fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-              fontWeight: '700',
+              fontWeight: '500',
               color: '#ffffff',
               margin: '0 0 3rem 0',
               lineHeight: '1.2'
@@ -157,7 +160,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                   <h3 style={{
                     fontSize: '1.5rem',
-                    fontWeight: '700',
+                    fontWeight: '500',
                     color: '#ffffff',
                     margin: '0 0 12px 0'
                   }}>
@@ -197,7 +200,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                   <h3 style={{
                     fontSize: '1.5rem',
-                    fontWeight: '700',
+                    fontWeight: '500',
                     color: '#ffffff',
                     margin: '0 0 12px 0'
                   }}>
@@ -237,7 +240,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                   <h3 style={{
                     fontSize: '1.5rem',
-                    fontWeight: '700',
+                    fontWeight: '500',
                     color: '#ffffff',
                     margin: '0 0 12px 0'
                   }}>
@@ -277,7 +280,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                   <h3 style={{
                     fontSize: '1.5rem',
-                    fontWeight: '700',
+                    fontWeight: '500',
                     color: '#ffffff',
                     margin: '0 0 12px 0'
                   }}>

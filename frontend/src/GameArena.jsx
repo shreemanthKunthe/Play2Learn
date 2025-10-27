@@ -200,7 +200,7 @@ function GameArena() {
   const LEVELS = useMemo(() => ([
     { name: 'Level 1: Trainee', challengerVideo: '/Videos/Challenger.mp4' },
     { name: 'Level 2: Specialist', challengerVideo: '/Videos/Blue.mp4' },
-    { name: 'Level 3: Boss', challengerVideo: '/Videos/Challenger3.mp4' },
+    { name: 'Level 3: Boss', challengerVideo: '/Videos/green.mp4' },
   ]), []);
   const [level, setLevel] = useState(0);
 
@@ -579,11 +579,10 @@ function GameArena() {
       <div className="arena-container">
         <div className="arena-header">
           <span className="subject-pill">{subjectTitle}</span>
-          <h1 className="arena-title">{subjectTitle} Arena</h1>
+          {/* Title intentionally removed per request */}
           <p className="arena-subtitle">Answer questions to defeat your opponent. Each mistake costs 20 HP.</p>
           <div className="arena-level" style={{opacity:.9, marginTop:8}}>{LEVELS[level]?.name}</div>
         </div>
-
         <div className="arena-stage">
           <div className="video-stack">
             <div className={`stage half left ${playerAnim}`}>

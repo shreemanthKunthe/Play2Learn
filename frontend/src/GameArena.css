@@ -1,6 +1,12 @@
-.arena-page { min-height: 100svh; background: #0f0f0f; color: #fff; display: flex; align-items: center; justify-content: center; padding: 40px 20px; font-family: "Instrument Sans", system-ui, Arial, sans-serif; position: relative; overflow: hidden; }
+.arena-page { height: 100svh; min-height: 100svh; background: #0f0f0f; color: #fff; display: flex; align-items: stretch; justify-content: center; padding: 16px; box-sizing: border-box; font-family: "Instrument Sans", system-ui, Arial, sans-serif; position: relative; overflow: hidden; }
 .arena-page::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255, 255, 255, 0.8) 1px, transparent 1px), radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1px), radial-gradient(circle, rgba(255, 204, 51, 0.7) 1px, transparent 1px), radial-gradient(circle, rgba(0, 198, 255, 0.6) 1px, transparent 1px); background-size: 120px 80px, 180px 120px, 200px 100px, 150px 90px; background-position: 0 0, 40px 60px, 80px 20px, 120px 80px; background-repeat: repeat; pointer-events: none; z-index: 0; animation: particleBreathe 8s ease-in-out infinite; }
-.arena-container { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 1; }
+.arena-container { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; height: 100%; overflow: hidden; }
+
+/* Professional, compact header */
+.arena-header { display: flex; flex-direction: column; gap: 6px; }
+.subject-pill { display: inline-block; align-self: flex-start; padding: 6px 10px; border-radius: 999px; background: #ffcc33; color: #0f0f0f; font-weight: 800; font-size: 12px; letter-spacing: .3px; }
+.arena-subtitle { margin: 0; color: #cfcfd6; font-size: 0.95rem; }
+.arena-level { font-size: 0.9rem; color: #e7e7ee; }
 .arena-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 24px; }
 .vs { font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; color: #ff3b3b; align-self: center; }
 .entity { display: flex; flex-direction: column; align-items: center; gap: 12px; }
@@ -27,8 +33,8 @@
 .go-actions { margin-top: 16px; display: flex; gap: 12px; justify-content: center; }
 
 /* Two-column layout: left videos stacked, right quiz card */
-.arena-stage { position: relative; display: grid; grid-template-columns: 1fr 1.6fr; align-items: center; width: 100%; height: 75vh; gap: 24px; }
-.video-stack { display: grid; grid-template-rows: 1fr 1fr; gap: 24px; height: 100%; }
+.arena-stage { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(360px, 1.4fr); align-items: center; width: 100%; gap: 14px; flex: 1; min-height: 0; }
+.video-stack { display: grid; grid-template-rows: minmax(0,1fr) minmax(0,1fr); gap: 14px; height: 100%; }
 .stage.half { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.35); background:#fff; }
 .stage video { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.9); }
 .stage .overlay { position: absolute; left: 12px; right: 12px; top: 12px; display: flex; align-items: center; gap: 10px; }
@@ -51,14 +57,16 @@
 }
 
 /* Right side quiz card */
-.quiz-card { width: 100%; align-self: center; background: rgba(11,12,16,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+.quiz-card { width: 100%; align-self: stretch; background: rgba(11,12,16,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.45); display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
 .quiz-card .question { margin-top: 0; }
+.quiz-meta { flex: 0 0 auto; }
+.options { flex: 1 1 auto; overflow: auto; }
 
 /* VS marker removed in professional layout */
 .vs-mid { display: none; }
 
 @media (max-width: 900px) {
-  .arena-stage { height: 60vh; gap: 16px; grid-template-columns: 1fr; }
+  .arena-stage { gap: 12px; grid-template-columns: 1fr; }
   .video-stack { grid-template-rows: 1fr; }
   .quiz-card { align-self: stretch; }
   .options { grid-template-columns: 1fr; }
