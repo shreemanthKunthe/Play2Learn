@@ -21,3 +21,28 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+// Keep splash on-screen for a minimum duration
+const SPLASH_MIN_MS = 7000; // ~7 seconds
+const splashStart = Date.now();
+let splashHidden = false;
+
+function hideSplashNow() {
+  if (splashHidden) return;
+  const el = document.getElementById('splash');
+  if (!el) { splashHidden = true; return; }
+  splashHidden = true;
+  el.style.opacity = '0';
+  setTimeout(() => { try { el.remove(); } catch {} }, 300);
+}
+
+function tryHideSplash() {
+  if (splashHidden) return;
+  const elapsed = Date.now() - splashStart;
+  const wait = Math.max(0, SPLASH_MIN_MS - elapsed);
+  setTimeout(hideSplashNow, wait);
+}
+
+// Schedule hide both after mount and on window load, respecting min time
+tryHideSplash();
+window.addEventListener('load', tryHideSplash);

@@ -11,8 +11,23 @@
       rel="stylesheet"
     />
     <title>Play2Learn</title>
+    <style>
+      /* Minimal critical CSS for early splash */
+      #splash { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0c10; z-index: 9999; transition: opacity .3s ease; }
+      #splash .inner { display:flex; flex-direction:column; align-items:center; gap:12px; color:#fff; font-family: "Instrument Sans", system-ui, Arial, sans-serif; }
+      #splash .logo { font-weight: 800; letter-spacing:.3px; }
+      #splash .bar { width: 160px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow:hidden; }
+      #splash .bar::after { content:""; display:block; height:100%; width:40%; background:#ffcc33; border-radius:999px; animation: slide 1s ease-in-out infinite; }
+      @keyframes slide { 0%{ transform: translateX(-20%);} 50%{ transform: translateX(100%);} 100%{ transform: translateX(-20%);} }
+    </style>
   </head>
   <body>
+    <div id="splash" aria-live="polite">
+      <div class="inner">
+        <div class="logo">Play2Learn</div>
+        <div class="bar"></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
