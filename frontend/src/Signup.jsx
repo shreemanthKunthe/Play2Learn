@@ -1,17 +1,110 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, updateProfile, GoogleAuthProvider } from 'firebase/auth';
 import './Signup.css';
+
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCQgFyhNohdhbSC7QkM0QmPUUa-voxMEQw",
+  authDomain: "play2learn-b84ef.firebaseapp.com",
+  projectId: "play2learn-b84ef",
+  storageBucket: "play2learn-b84ef.appspot.com",
+  messagingSenderId: "385714339470",
+  appId: "1:385714339470:web:a4af2fb156659f85dd13df"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return false;
+    }
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup attempt:', { name, email, password });
-    navigate('/subjects');
+    setError('');
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, {
+        displayName: name
+      });
+      const token = await userCredential.user.getIdToken();
+
+      // Send token to backend for verification
+      const res = await fetch("http://localhost:5000/verifyToken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        console.log("✅ User created and verified:", data);
+        navigate("/subjects");
+      } else {
+        setError(data.error || "Signup failed");
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError(err.message || 'Failed to create an account. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🔹 Google Signup
+  const handleGoogleSignup = async () => {
+    try {
+      setError("");
+      const result = await signInWithPopup(auth, googleProvider);
+      const token = await result.user.getIdToken();
+
+      const res = await fetch("http://localhost:5000/verifyToken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        console.log("✅ Google signup verified:", data);
+        navigate("/subjects");
+      } else {
+        setError(data.error || "Google signup failed");
+      }
+    } catch (err) {
+      console.error("Google Signup Error:", err);
+      if (err.code === "auth/popup-closed-by-user") setError("Login cancelled.");
+      else if (err.code === "auth/popup-blocked") setError("Popup blocked. Allow popups.");
+      else setError(err.message || "Google signup failed.");
+    }
   };
 
   return (
@@ -71,13 +164,19 @@ function Signup() {
               />
             </div>
 
-            <button type="submit" className="signup-button">Sign Up</button>
+            <button 
+              type="submit" 
+              className="signup-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating Account...' : 'Sign Up'}
+            </button>
 
             <div className="signup-divider">
               <span>or</span>
             </div>
 
-            <button type="button" className="google-signup">
+            <button type="button" className="google-signup" onClick={handleGoogleSignup}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M19.8055 10.2292C19.8055 9.55056 19.7508 8.86717 19.6359 8.19775H10.2002V12.0492H15.6014C15.3773 13.2911 14.6571 14.3898 13.6025 15.0879V17.5866H16.8251C18.7172 15.8449 19.8055 13.2728 19.8055 10.2292Z" fill="#4285F4"/>
                 <path d="M10.2002 20.0006C12.9516 20.0006 15.2727 19.1151 16.8306 17.5865L13.608 15.0879C12.7063 15.6979 11.5508 16.0433 10.2057 16.0433C7.54148 16.0433 5.28174 14.2834 4.48272 11.9097H1.16309V14.4818C2.75809 17.6536 6.31245 20.0006 10.2002 20.0006Z" fill="#34A853"/>
@@ -90,6 +189,8 @@ function Signup() {
             <p className="signin-link">
               Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>Sign in</a>
             </p>
+
+            {error && <p className="error-message">{error}</p>}
           </form>
         </div>
       </div>

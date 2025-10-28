@@ -241,8 +241,25 @@
 .signin-link {
   text-align: center;
   font-size: 0.95rem;
-  color: #cfcfd6;
-  margin: 8px 0 0 0;
+  color: #a5a5b8;
+  margin-top: 20px;
+}
+
+.error-message {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .signin-link a {
