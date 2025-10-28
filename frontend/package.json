@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^5.0.3",
     "autoprefixer": "^10.4.21",
+    "firebase": "^12.4.0",
     "framer-motion": "^12.23.22",
     "gl-matrix": "^3.4.4",
     "gsap": "^3.13.0",
@@ -19,7 +21,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3",
-    "@vitejs/plugin-react": "^5.0.3",
     "vite": "^7.1.7"
   },
   "devDependencies": {
