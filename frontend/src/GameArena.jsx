@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Leaderboard, { readLeaderboard, writeLeaderboard } from './Leaderboard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './GameArena.css';
 import AptitudePuzzle from './AptitudePuzzle';
@@ -574,6 +575,22 @@ function GameArena() {
   };
   const gameOver = playerHP === 0 || challengerHP === 0;
 
+  // Persist score to leaderboard once per game over
+  const [savedScore, setSavedScore] = useState(false);
+  useEffect(() => {
+    if (!gameOver || savedScore) return;
+    const denom = totalCount || 0;
+    const percent = denom ? (correctCount / denom) * 100 : 0;
+    const name = localStorage.getItem('playerName') || 'Player';
+    const key = subject;
+    const list = readLeaderboard(key);
+    const next = [...list, { name, score: percent, ts: Date.now() }]
+      .sort((a,b) => b.score - a.score || a.ts - b.ts);
+    writeLeaderboard(key, next);
+    setSavedScore(true);
+    // reset flag when restarting
+  }, [gameOver, savedScore, correctCount, totalCount, subject]);
+
   return (
     <div className="arena-page">
       <div className="arena-container">
@@ -671,6 +688,9 @@ function GameArena() {
                   )}
                   <button className="btn yellow" onClick={() => { setPlayerHP(100); setChallengerHP(100); setIdx(0); setSelected(null); setResult(''); setCorrectCount(0); setTotalCount(0); setLevel(0); }}>Restart</button>
                   <button className="btn gray" onClick={() => navigate('/subjects')}>Back</button>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Leaderboard subject={subject} limit={5} />
                 </div>
               </div>
             )}
