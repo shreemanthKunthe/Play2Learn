@@ -1,0 +1,8 @@
+.lb-card{background:rgba(11,12,16,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 60px rgba(0,0,0,.45);border-radius:14px;padding:16px;color:#fff}
+.lb-title{font-weight:800;margin-bottom:8px}
+.lb-empty{opacity:.8}
+.lb-list{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.lb-item{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px}
+.lb-item .rank{font-weight:800;color:#ffcc33}
+.lb-item .name{font-weight:600}
+.lb-item .score{font-weight:800}

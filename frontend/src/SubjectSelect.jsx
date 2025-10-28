@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './SubjectSelect.css';
 import InfiniteMenu from './InfiniteMenu';
 
@@ -34,6 +34,18 @@ const SUBJECTS = [
 ];
 
 export default function SubjectSelect() {
+  const [playerName, setPlayerName] = useState('');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('playerName');
+      if (saved) setPlayerName(saved);
+    } catch {}
+  }, []);
+  const onNameChange = (e) => {
+    const v = e.target.value.slice(0, 24);
+    setPlayerName(v);
+    try { localStorage.setItem('playerName', v || 'Player'); } catch {}
+  };
 
   const items = SUBJECTS.map((s) => ({
     image: s.image,
@@ -44,6 +56,10 @@ export default function SubjectSelect() {
 
   return (
     <div className="subjects-page">
+      <div className="player-bar">
+        <label htmlFor="playerName">Player name</label>
+        <input id="playerName" value={playerName} onChange={onNameChange} placeholder="Enter your name" />
+      </div>
       <div className="infinite-wrap"><InfiniteMenu items={items} /></div>
     </div>
   );
